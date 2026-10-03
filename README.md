@@ -33,6 +33,7 @@ Diagram sources (editable in [draw.io](https://app.diagrams.net/)) are in [`docs
 
 ### Examination system
 
+![Examination system](docs/diagrams/examination-system.png)
 ![Examination behavior](docs/diagrams/examination-system-behavior.png)
 
 - `UExaminationComponent` handles the flow: remember the current camera, blend to the studio, lock look and move input, request the item and push the examination widget. Exiting reverses all of it.
@@ -42,6 +43,7 @@ Diagram sources (editable in [draw.io](https://app.diagrams.net/)) are in [`docs
 ### Construction system
 
 ![Construction system](docs/diagrams/construction-system.png)
+![Construction system](docs/diagrams/construction-system-behavior.png)
 
 1. Build mode adds a mapping context and enables the component's tick.
 2. Selecting a building async-loads its data. Stale loads are discarded using the last requested index.
