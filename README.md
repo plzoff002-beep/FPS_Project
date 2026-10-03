@@ -19,11 +19,11 @@ A first-person shooter prototype built solo in **Unreal Engine <5.x>** with **C+
 
 ### Examination
 
-<!-- drag examination clip here -->
+https://github.com/user-attachments/assets/5779bf79-846d-4a3f-bc3e-ad7fe40e5141
 
 ### Construction
 
-<!-- drag construction clip here -->
+https://github.com/user-attachments/assets/499b257f-7ace-45a5-bc55-0f8ae230cd61
 
 ## Architecture
 
