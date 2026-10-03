@@ -1,0 +1,9 @@
+#pragma once
+
+struct FGameplaySettingsData;
+struct FGraphicsSettingsData;
+struct FAudioSettingsData;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameplaySettingsChanged, FGameplaySettingsData&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGraphicsSettingsChanged, FGraphicsSettingsData&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAudioSettingsChanged, FAudioSettingsData&);

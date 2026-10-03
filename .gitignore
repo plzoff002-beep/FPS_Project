@@ -1,0 +1,35 @@
+# Unreal Engine generated folders
+Content/
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# Visual Studio / IDE
+.vs/
+.vscode/
+.idea/
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+*.vsconfig
+*.code-workspace
+
+# Packaged builds (publish them as GitHub Releases instead)
+Packaged/
+PackagedBuilds/
+
+# Video files: keep them out of git history.
+# Upload short clips through the README editor on GitHub, or link a YouTube video.
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.webm
