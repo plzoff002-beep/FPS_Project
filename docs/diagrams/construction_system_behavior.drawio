@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Construction system" id="constr1">
+    <mxGraphModel dx="978" dy="629" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ctrl" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;AFPSPlayerController&lt;/b&gt;&lt;hr&gt;Build Mapping Context&lt;br&gt;Binds toggle / place / rotate / slot-select" vertex="1">
+          <mxGeometry height="70" width="240" x="370" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="chr" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;AFPSCharacter&lt;/b&gt;&lt;hr&gt;Owns UConstructionComponent&lt;br&gt;Forwards build commands" vertex="1">
+          <mxGeometry height="70" width="240" x="370" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="cc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;UConstructionComponent&lt;/b&gt;&lt;hr&gt;Ghost preview + placement checks&lt;br&gt;Grid snap / ground trace / overlap test&lt;br&gt;Async load build data, mesh, class" vertex="1">
+          <mxGeometry height="90" width="240" x="370" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="cam" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;UCameraComponent&lt;/b&gt;&lt;br&gt;(Player camera)&lt;hr&gt;View direction for the aim point" vertex="1">
+          <mxGeometry height="80" width="200" x="60" y="325" as="geometry" />
+        </mxCell>
+        <mxCell id="lib" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;UBuildLibraryData&lt;/b&gt;&lt;hr&gt;AllBuildings (soft refs)" vertex="1">
+          <mxGeometry height="60" width="240" x="40" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="bod" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;UBuildObjectData&lt;/b&gt;&lt;hr&gt;ActorClass, GhostMesh (soft)&lt;br&gt;GridSize" vertex="1">
+          <mxGeometry height="70" width="240" x="40" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="world" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="&lt;b&gt;World&lt;/b&gt;&lt;br&gt;(Collision Channels)&lt;hr&gt;BuildableGround: downward trace&lt;br&gt;BuildableObject: overlap test" vertex="1">
+          <mxGeometry height="90" width="200" x="390" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="ghost" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;AStaticMeshActor&lt;/b&gt;&lt;br&gt;(Ghost)&lt;hr&gt;Preview follows the aim point" vertex="1">
+          <mxGeometry height="80" width="220" x="730" y="325" as="geometry" />
+        </mxCell>
+        <mxCell id="mat" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;b&gt;UMaterialInstanceDynamic&lt;/b&gt;&lt;hr&gt;Color + Opacity parameters&lt;br&gt;Green = valid, red = blocked" vertex="1">
+          <mxGeometry height="70" width="220" x="730" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="placed" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;Placed Actor&lt;/b&gt;&lt;hr&gt;Spawned from ActorClass&lt;br&gt;Created on confirm" vertex="1">
+          <mxGeometry height="70" width="220" x="730" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="ctrl" style="endArrow=block;html=1;" target="chr" value="forwards build input">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="chr" style="endArrow=diamondThin;endFill=1;html=1;" target="cc" value="owns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="cc" style="endArrow=open;html=1;" target="cam" value="reads view direction">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="cc" style="endArrow=open;html=1;" target="lib" value="reads building list">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="lib" style="endArrow=open;html=1;" target="bod" value="contains">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="cc" style="endArrow=open;dashed=1;html=1;" target="bod" value="async-loads selected data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="cc" style="endArrow=open;html=1;" target="world" value="traces ground, tests overlap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="cc" style="endArrow=open;html=1;" target="ghost" value="spawns / updates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="ghost" style="endArrow=open;html=1;" target="mat" value="tinted by validity">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="cc" style="endArrow=open;html=1;" target="placed" value="spawns on confirm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,46 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Examination system" id="exam1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="comp" value="UExaminationComponent" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="380" height="240" as="geometry"/>
+        </mxCell>
+        <mxCell id="comp_f" value="# StudioClass: TSoftClassPtr&amp;lt;AExamineStudio&amp;gt;&lt;br&gt;- CurrentStudio: TObjectPtr&amp;lt;AExamineStudio&amp;gt;&lt;br&gt;- PreviousViewTarget: TObjectPtr&amp;lt;AActor&amp;gt;&lt;br&gt;- UIManager: TObjectPtr&amp;lt;ULocalUIManager&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;html=1;" vertex="1" parent="comp">
+          <mxGeometry y="26" width="380" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="comp_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="comp">
+          <mxGeometry y="102" width="380" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="comp_m" value="+ SetupStudio(): void  [1]&lt;br&gt;+ StartExamination(Data: FExamineItem*): void  [2]&lt;br&gt;+ StopExamination(): void  [3]&lt;br&gt;+ RotateItem(Value: const FInputActionValue&amp;amp;): void  [4]&lt;br&gt;+ AdjustSceneCamera(Value: const FInputActionValue&amp;amp;): void  [4]&lt;br&gt;- LoadStudioClassAsync(): void&lt;br&gt;- SetupStudioOnLoaded(): void  [1]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;html=1;" vertex="1" parent="comp">
+          <mxGeometry y="110" width="380" height="130" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="studio" value="AExamineStudio" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="40" width="400" height="380" as="geometry"/>
+        </mxCell>
+        <mxCell id="studio_f" value="- ItemAnchor: TObjectPtr&amp;lt;USceneComponent&amp;gt;  [7]&lt;br&gt;- SceneCamera: TObjectPtr&amp;lt;UCameraComponent&amp;gt;&lt;br&gt;- CurrentData: FExamineItem*  [1]&lt;br&gt;- CurrentClassToLoad: TSoftClassPtr&amp;lt;AActor&amp;gt;  [2]&lt;br&gt;- CurrentExamineActor: TObjectPtr&amp;lt;AActor&amp;gt;&lt;br&gt;- bActive: bool  [3]&lt;br&gt;- AdjustingRate: float&lt;br&gt;- SensivityRotation: float" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;html=1;" vertex="1" parent="studio">
+          <mxGeometry y="26" width="400" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="studio_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="studio">
+          <mxGeometry y="176" width="400" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="studio_m" value="+ SetExamineData(NewData: FExamineItem*): void&lt;br&gt;+ SetActive(bEnable: bool): void&lt;br&gt;+ SetupItem(ItemToExamine: TSoftClassPtr&amp;lt;AActor&amp;gt;): void  [4]&lt;br&gt;+ RotateItem(Delta: const FVector2D&amp;amp;): void&lt;br&gt;+ AdjustSceneCamera(Value: float): void  [6]&lt;br&gt;- LoadItemClassAsync(ClassToLoad: TSoftClassPtr&amp;lt;AActor&amp;gt;): void&lt;br&gt;- SetupItemOnLoaded(ClassToSetup: TSubclassOf&amp;lt;AActor&amp;gt;): void  [4]&lt;br&gt;- ReadyItemAnchor(): void  [5]&lt;br&gt;- ReadySceneCamera(): void  [5]&lt;br&gt;- AdjustCameraDistanceLimits(): void  [6]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;html=1;" vertex="1" parent="studio">
+          <mxGeometry y="184" width="400" height="196" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="note_comp" value="&lt;b&gt;Пояснения&lt;/b&gt;&lt;br&gt;[1] SetupStudio только запускает асинхронную загрузку класса студии. После загрузки студия спавнится далеко от уровня (50000, 50000, 50000), чтобы не пересекаться с геометрией.&lt;br&gt;[2] StartExamination: запоминает текущую камеру, плавно переключает вид на студию, блокирует look/move, просит студию создать предмет и показывает виджет.&lt;br&gt;[3] StopExamination: обратное действие. Деактивирует студию, возвращает камеру и управление, убирает виджет.&lt;br&gt;[4] RotateItem и AdjustSceneCamera сами ничего не делают, а передают ввод в студию." style="shape=note;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;size=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="320" width="380" height="230" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="note_studio" value="&lt;b&gt;Пояснения&lt;/b&gt;&lt;br&gt;[1] CurrentData: данные предмета (дистанции камеры). Сырой указатель, студия им не владеет.&lt;br&gt;[2] CurrentClassToLoad: класс, запрошенный последним. Нужен, чтобы отбросить устаревшую загрузку, если игрок уже выбрал другой предмет.&lt;br&gt;[3] bActive: пока false, готовый предмет не спавнится. Защита от загрузки, которая закончилась после выхода из осмотра.&lt;br&gt;[4] SetupItem не создаёт предмет сразу, а запускает async-загрузку. Спавн происходит в SetupItemOnLoaded.&lt;br&gt;[5] ReadyItemAnchor / ReadySceneCamera: сбрасывают поворот якоря и ставят камеру на начальную дистанцию.&lt;br&gt;[6] AdjustSceneCamera двигает камеру по X (зум), затем AdjustCameraDistanceLimits зажимает дистанцию между Min и Max.&lt;br&gt;[7] ItemAnchor: точка, к которой прикреплён предмет. Вращается якорь, а не сам предмет." style="shape=note;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;size=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="460" width="400" height="310" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" value="spawns / controls" style="endArrow=open;html=1;" edge="1" parent="1" source="comp" target="studio"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

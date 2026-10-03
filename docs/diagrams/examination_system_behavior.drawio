@@ -1,0 +1,59 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="FPS_Project architecture" id="arch1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="ctrl" value="&lt;b&gt;AFPSPlayerController&lt;/b&gt;&lt;hr&gt;Input Mapping Contexts&lt;br&gt;Binds Input Actions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="380" y="40" width="200" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="chr" value="&lt;b&gt;AFPSCharacter&lt;/b&gt;&lt;hr&gt;Owns gameplay components&lt;br&gt;Grab / Interact / Build / Examine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="380" y="170" width="200" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="exc" value="&lt;b&gt;UExaminationComponent&lt;/b&gt;&lt;hr&gt;StartExamination / StopExamination&lt;br&gt;RotateItem / AdjustSceneCamera&lt;br&gt;Async load StudioClass" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="100" y="320" width="230" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="cc" value="&lt;b&gt;UConstructionComponent&lt;/b&gt;&lt;hr&gt;Ghost preview + placement checks&lt;br&gt;Grid snap / ground / overlap&lt;br&gt;Async load build data, mesh, class" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="630" y="320" width="240" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="studio" value="&lt;b&gt;AExamineStudio&lt;/b&gt;&lt;hr&gt;SceneCamera, ItemAnchor&lt;br&gt;Spawns examined actor&lt;br&gt;Rotates item, zooms camera" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="100" y="470" width="230" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="ui" value="&lt;b&gt;ULocalUIManager&lt;/b&gt;&lt;br&gt;(LocalPlayer subsystem)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="400" y="470" width="170" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="widget" value="&lt;b&gt;UExaminationWidget&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="400" y="590" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="item" value="&lt;b&gt;FExamineItem&lt;/b&gt;&lt;hr&gt;ExamineActorClass (soft)&lt;br&gt;Initial/Min/Max camera distance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="100" y="600" width="230" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lib" value="&lt;b&gt;UBuildLibraryData&lt;/b&gt;&lt;hr&gt;AllBuildings (soft refs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="630" y="470" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="bod" value="&lt;b&gt;UBuildObjectData&lt;/b&gt;&lt;hr&gt;ActorClass, GhostMesh (soft)&lt;br&gt;GridSize" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="630" y="590" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="ghost" value="&lt;b&gt;AStaticMeshActor&lt;/b&gt;&lt;br&gt;(Ghost, hologram material)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="930" y="330" width="190" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" value="possesses / binds input" style="endArrow=block;html=1;" edge="1" parent="1" source="ctrl" target="chr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="forwards Examine input" style="endArrow=block;html=1;" edge="1" parent="1" source="ctrl" target="exc"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="owns" style="endArrow=diamondThin;endFill=1;html=1;" edge="1" parent="1" source="chr" target="exc"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" value="owns" style="endArrow=diamondThin;endFill=1;html=1;" edge="1" parent="1" source="chr" target="cc"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" value="spawns, controls" style="endArrow=open;html=1;" edge="1" parent="1" source="exc" target="studio"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" value="push / pop widget" style="endArrow=open;html=1;" edge="1" parent="1" source="exc" target="ui"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" value="creates" style="endArrow=open;html=1;" edge="1" parent="1" source="ui" target="widget"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" value="reads data" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="studio" target="item"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" value="uses" style="endArrow=open;html=1;" edge="1" parent="1" source="cc" target="lib"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" value="contains" style="endArrow=open;html=1;" edge="1" parent="1" source="lib" target="bod"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" value="spawns / updates" style="endArrow=open;html=1;" edge="1" parent="1" source="cc" target="ghost"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -29,13 +29,11 @@ A first-person shooter prototype built solo in **Unreal Engine <5.x>** with **C+
 
 The game is built from small components owned by the character. The player controller only translates input into calls, and gameplay classes never depend on UI classes directly.
 
-![Architecture overview](docs/diagrams/architecture.png)
-
 Diagram sources (editable in [draw.io](https://app.diagrams.net/)) are in [`docs/diagrams`](docs/diagrams).
 
 ### Examination system
 
-![Examination system](docs/diagrams/examination-system.png)
+![Examination behavior](docs/diagrams/examination-behavior.png)
 
 - `UExaminationComponent` handles the flow: remember the current camera, blend to the studio, lock look and move input, request the item and push the examination widget. Exiting reverses all of it.
 - `AExamineStudio` is spawned far from the level (50000, 50000, 50000) so it never overlaps level geometry. It owns the camera and an anchor the examined item is attached to. Rotation is applied to the anchor, not to the item.
