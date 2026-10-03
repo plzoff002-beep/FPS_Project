@@ -33,7 +33,7 @@ Diagram sources (editable in [draw.io](https://app.diagrams.net/)) are in [`docs
 
 ### Examination system
 
-![Examination behavior](docs/diagrams/examination-behavior.png)
+![Examination behavior](docs/diagrams/examination-system-behavior.png)
 
 - `UExaminationComponent` handles the flow: remember the current camera, blend to the studio, lock look and move input, request the item and push the examination widget. Exiting reverses all of it.
 - `AExamineStudio` is spawned far from the level (50000, 50000, 50000) so it never overlaps level geometry. It owns the camera and an anchor the examined item is attached to. Rotation is applied to the anchor, not to the item.
