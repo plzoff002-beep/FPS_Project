@@ -33,8 +33,8 @@ Diagram sources (editable in [draw.io](https://app.diagrams.net/)) are in [`docs
 
 ### Examination system
 
-![Examination system](docs/diagrams/examination-system.png)
 ![Examination behavior](docs/diagrams/examination-system-behavior.png)
+![Examination system](docs/diagrams/examination-system.png)
 
 - `UExaminationComponent` handles the flow: remember the current camera, blend to the studio, lock look and move input, request the item and push the examination widget. Exiting reverses all of it.
 - `AExamineStudio` is spawned far from the level (50000, 50000, 50000) so it never overlaps level geometry. It owns the camera and an anchor the examined item is attached to. Rotation is applied to the anchor, not to the item.
@@ -42,8 +42,8 @@ Diagram sources (editable in [draw.io](https://app.diagrams.net/)) are in [`docs
 
 ### Construction system
 
-![Construction system](docs/diagrams/construction-system.png)
 ![Construction system](docs/diagrams/construction-system-behavior.png)
+![Construction system](docs/diagrams/construction-system.png)
 
 1. Build mode adds a mapping context and enables the component's tick.
 2. Selecting a building async-loads its data. Stale loads are discarded using the last requested index.
