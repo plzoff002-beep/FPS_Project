@@ -44,11 +44,11 @@ A first-person shooter prototype built solo in **Unreal Engine 5.0** with **C++*
 
 ### Examination
 
-<!-- drag examination clip here -->
+https://github.com/user-attachments/assets/5779bf79-846d-4a3f-bc3e-ad7fe40e5141
 
 ### Construction
 
-<!-- drag construction clip here -->
+https://github.com/user-attachments/assets/499b257f-7ace-45a5-bc55-0f8ae230cd61
 
 ## Architecture
 
@@ -142,6 +142,8 @@ Montage frame reached
 Example, shell-by-shell reload: `Reload_Start` montage &rarr; `ReloadStartFinished` &rarr; manager checks the magazine and plays `InsertAmmo` &rarr; `InsertAmmoFinished` adds one round and repeats until the magazine is full or reserve ammo ends &rarr; `Reload_Finish` &rarr; charge if needed &rarr; `Ready`.
 
 Because logic follows the animation, changing the length of a montage does not break the code.
+![Examination behavior](docs/diagrams/examination-system-behavior.png)
+![Examination system](docs/diagrams/examination-system.png)
 
 ## Systems
 
@@ -150,7 +152,7 @@ Because logic follows the animation, changing the length of a montage does not b
 - `AExamineStudio` is spawned far from the level so it never overlaps level geometry. It owns the camera and an anchor; rotation is applied to the anchor, not to the item.
 - Item data (`FExamineItem`) defines the item class (soft reference) and the camera distances.
 
-![Examination system](docs/diagrams/examination-system.png)
+![Construction system](docs/diagrams/construction-system.png)
 
 ### Construction
 1. Build mode adds a mapping context and enables the component's tick.
