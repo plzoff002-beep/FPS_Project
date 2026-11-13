@@ -24,22 +24,19 @@ FReply UInventorySlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry
 
 	if (APlayerController* PC = Cast<APlayerController>(GetOwningPlayer())) {
 		if (ULocalUIManager* UIManager = PC->GetLocalPlayer()->GetSubsystem<ULocalUIManager>()) {
-			if (UUserWidget* ContextMenu = Cast<UUserWidget>(UIManager->FindAndLoadWidget<UContextMenu>(this))) {
-				//FVector2D MousePos = InMouseEvent.GetScreenSpacePosition();
-				FVector2D LocalMousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
+			TWeakObjectPtr<UInventorySlotWidget> WeakThis(this);
 
-				//USlateBlueprintLibrary::ScreenToWidgetLocal(this, InGeometry, MousePos, LocalMousePos);
+			UIManager->FindAndPushWidget(EUIType::ContextMenu, this, [WeakThis](UUserWidget* Widget) {
+				if (WeakThis.IsValid() && Widget) {
+					FVector2D LocalMousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(WeakThis.Get()->GetWorld());
 
-				//ContextMenu->SetPositionInViewport(LocalMousePos, true);
-
-				if (UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(ContextMenu)) {
-					CanvasSlot->SetPosition(LocalMousePos);
+					if (UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Widget)) {
+						CanvasSlot->SetPosition(LocalMousePos);
+					}
 				}
+			});
 
-				//ContextMenu->SetRenderTranslation(LocalMousePos);
-
-				return FReply::Handled();
-			}
+			return FReply::Handled();
 		}
 	}
 

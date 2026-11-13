@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="AWeaponBase - contents" id="sys_weapon_base">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="AWeaponBase" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="512" height="543" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- Data: UWeaponData&lt;br&gt;- WeaponStats: FWeaponStats  (Damage, FireRate, Recoil, Spread, AdsSpread)&lt;br&gt;- Ammo: int32&lt;br&gt;- TotalAmmo: int32&lt;br&gt;- FireCooldown: float&lt;br&gt;- bNeedCharge: bool&lt;br&gt;- CasingPool: TArray&amp;lt;AWeapon_Casing&amp;gt;&lt;br&gt;- WeaponMesh: USkeletalMeshComponent&lt;br&gt;- MagazineMesh: UStaticMeshComponent&lt;br&gt;- AttachmentComponent: UWeaponAttachmentComponent&lt;br&gt;+ OnWeaponAction: FOnWeaponAction&lt;br&gt;+ OnAmmoChanged: FOnAmmoChanged" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="512" height="212" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="238" width="512" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ Shoot(): bool&lt;br&gt;+ Reload(): bool&lt;br&gt;+ ReloadFinished(): void&lt;br&gt;+ AddAmmo(Value): void&lt;br&gt;+ CanShoot(): bool&lt;br&gt;+ IsClipFull(): bool&lt;br&gt;+ GetRecoil(): float&lt;br&gt;+ GetWeaponIKData(): FWeaponIKData&lt;br&gt;+ HandleSpawnCasing(): void&lt;br&gt;+ HandlePlayEventSound(EventType): void&lt;br&gt;+ HandleChangeSpread(): void&lt;br&gt;+ SetActorHiddenInGame(bNewHidden): void&lt;br&gt;- Initialize(): void&lt;br&gt;- InitializeStats(): void&lt;br&gt;- AddModifiersStats(): void&lt;br&gt;- SpawnCasingPool(): void&lt;br&gt;+ Tick(DeltaTime): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="246" width="512" height="297" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;AWeaponBase - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: Base class of all weapons. It contains the shared rules (ammo, cooldown, spread, pooling); concrete weapons override what differs.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Polymorphism&lt;/code&gt;&lt;/strong&gt;: &lt;code&gt;Weapon_M4&lt;/code&gt;, &lt;code&gt;Weapon_M1911&lt;/code&gt;, &lt;code&gt;Weapon_Mossberg590&lt;/code&gt;, &lt;code&gt;Weapon_BREN2&lt;/code&gt; and &lt;code&gt;Weapon_HoneyBadger&lt;/code&gt; derive from it. &lt;code&gt;Shoot()&lt;/code&gt; and &lt;code&gt;Reload()&lt;/code&gt; are virtual.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Initialize()&lt;/code&gt;&lt;/strong&gt;: Reads &lt;code&gt;UWeaponData&lt;/code&gt; (stats, meshes, anim blueprint), applies attachment modifiers and builds the casing pool.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Shoot()&lt;/code&gt;&lt;/strong&gt;: Checks the muzzle socket and &lt;code&gt;CanShoot()&lt;/code&gt;, spends a round, starts the cooldown (tick is enabled only during it) and broadcasts &lt;code&gt;OnWeaponAction(Shoot)&lt;/code&gt; so the arms and the weapon play their montages.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Reload()&lt;/code&gt;&lt;/strong&gt;: Raises &lt;code&gt;Reload&lt;/code&gt; or &lt;code&gt;Reload_Start&lt;/code&gt; depending on the reload type (magazine or shell by shell).&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;SpawnCasingPool() / HandleSpawnCasing()&lt;/code&gt;&lt;/strong&gt;: Object pooling: casings are spawned once and recycled. The pool size is in the data asset (&lt;code&gt;CasingPoolAmount&lt;/code&gt;); an anim notify triggers the ejection.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;GetWeaponIKData()&lt;/code&gt;&lt;/strong&gt;: Computes the left-hand IK target from the grip socket relative to the right hand, through &lt;code&gt;IWeaponIKProvider&lt;/code&gt;.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="642" y="40" width="620" height="543" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

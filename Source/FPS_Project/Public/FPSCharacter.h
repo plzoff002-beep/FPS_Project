@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -29,6 +27,11 @@ class UHandleGrabComponent;
 class UConstructionComponent;
 class UBuildLibraryData;
 class UExaminationComponent;
+class UInteractionComponent;
+class UCrouchComponent;
+class UFPSStateComponent;
+class UFieldOfViewComponent;
+class URecoilComponent;
 
 enum class EButtonType : uint8;
 
@@ -38,168 +41,61 @@ class FPS_PROJECT_API AFPSCharacter : public ACharacter, public IWeaponIKProvide
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AFPSCharacter();
+
+	virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const override;
+	virtual void OnMovementModeChanged(EMovementMode Prev, uint8 PrevCustom) override;
+	virtual FViewModelState GetViewModelState() override;
 
 	FORCEINLINE UCameraComponent* GetCamera() const { return Camera; }
 
-	FORCEINLINE FVector2D GetMouseInput() const { return MouseInputThisFrame; }
+	FORCEINLINE FVector2D GetMouseInputThisFrame() const { return MouseInputThisFrame; }
 
-	FORCEINLINE UViewModelComponent* GetViewModelComponent() const { return ViewModel; }
 	FORCEINLINE USkeletalMeshComponent* GetCharacterArms() const { return CharacterArms; }
-	FORCEINLINE UWeaponManager* GetWeaponManager() { return WeaponManager; }
-	FORCEINLINE UCharacterStatsDataAsset* GetCharacterStatsData() const { return CharacterStatsData; }
-
-	FORCEINLINE bool IsWalking() const { return bWalk; }
-	FORCEINLINE bool IsCrouching() const { return bCrouch; }
-	FORCEINLINE bool IsAiming() const { return bAim; }
-
-	FCharacterState GetCharacterState_Implementation() const;
-	FViewModelState GetViewModelState_Implementation() const;
 
 	void SetPlayerGameplayConfig(FGameplaySettingsData& NewData);
 
 	FVector GetCameraRelativeLocation() const;
-	
-	FTransform GetRightHandIKTransform_Implementation() const;
 
-	virtual FWeaponIKData GetWeaponIKData_Implementation() const override;
+	FTransform GetRightHandIKTransform() override;
+	virtual FWeaponIKData GetWeaponIKData() override;
 
 	void SetCameraRelativeLocation(FVector NewLocation);
 
-	void BeginInteraction();
-	void EndInteraction(float ElapsedTime);
+	void UpdateIsCloseToWall() const;
 
-	void ToggleBuildMode(bool bEnable);
-	void SelectBuildingFromLibrary(int32 IntexToSelect);
-	void PlaceBuildObject();
-	void RotateBuildObject(float Direction);
-
-	void ToggleExamination(bool& bExamed);
-
-	UFUNCTION(BlueprintCallable)
-		void TryGrabObject();
-
-	UFUNCTION(BlueprintCallable)
-		bool TryReleaseGrabbedObject();
-
-	UFUNCTION(BlueprintCallable)
-		bool TryThrowGrabbedObject();
-
-	bool IsFalling() const;
-
-	UFUNCTION(BlueprintCallable)
-		void SetWalkState(bool bValue);
-
-	UFUNCTION(BlueprintCallable)
-		void SetSprintState(bool bValue);
-	
-	UFUNCTION(BlueprintCallable)
-		void SetCrouchState(bool bValue);
-
-	UFUNCTION(BlueprintCallable)
-		void SetAimState(bool bValue);
-
-	UFUNCTION(BlueprintCallable)
-		bool IsSprinting() const;
-
-	UFUNCTION(BlueprintCallable)
-		bool IsCloseToWall() const;
-
-	UFUNCTION(BlueprintCallable)
-		bool IsReloading() const;
+	void MoveCharacter(const FVector2D& Axis);
+	void Look(const FVector2D& Axis);
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable)
-		void MoveCharacter(const FVector2D& Axis);
-
-	UFUNCTION(BlueprintCallable)
-		void Look(const FVector2D& Axis);
-
-	UFUNCTION(BlueprintCallable)
-		void Shoot() const;
-
-	UFUNCTION(BlueprintCallable)
-		void SwapWeapon(const float Index) const;
-
-	UFUNCTION(BlueprintCallable)
-		void Reload() const;
-
-	UFUNCTION(BlueprintCallable)
-		void ToggleLaserAttachments() const;
-
-	UFUNCTION(BlueprintCallable)
-		void MoveWeaponStock() const;
-
-	UPROPERTY(EditAnywhere, Category = "Interaction")\
-		float InteractionMaxDistance = 250.f;
-
-	UPROPERTY(EditAnywhere, Category = "Character Speed")
-		float WalkSpeed = 600.f;
-
-	UPROPERTY(EditAnywhere, Category = "Character Speed")
-		float SprintSpeed = 1200.f;
-
-	UPROPERTY(EditAnywhere, Category = "Character Height")
-		float CrouchHalfHeight = 44.f;
-
-	UPROPERTY(EditAnywhere, Category = "Character Height")
-		float StandHalfHeight = 88.f;
-
-	//UPROPERTY(EditAnywhere, Category = "Field Of View")
-		//float WalkFOV = 90.f;
-
-	UPROPERTY(EditAnywhere, Category = "Field Of View")
-		float SprintFOV = 110.f;
-
-	UPROPERTY(EditAnywhere, Category = "Acceleration")
-		float HeightAccel = 10.f;
-
-	UPROPERTY(EditAnywhere, Category = "Acceleration")
-		float SpeedAccel = 10.f;
-
-	UPROPERTY(EditAnywhere, Category = "Acceleration")
-		float FOVAccel = 10.f;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		//float MouseSensivity = 1.f;
-
-	UPROPERTY(EditAnywhere)
-		float DistanceToWall = 100.f;
+	void ItemSelectionHandler(const int32 Index, AActor* SpawnedActor, EItemType ItemType);
+	void ItemSpawnerHandler(UItemDefinition* ItemDef, const int32 SlotIndex);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		USceneComponent* Pivot = nullptr;
+		TObjectPtr<USceneComponent> Pivot = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UCameraComponent* Camera = nullptr;
+		TObjectPtr<UCameraComponent> Camera = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		USkeletalMeshComponent* CharacterArms = nullptr;
+		TObjectPtr<USkeletalMeshComponent> CharacterArms = nullptr;
 		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		UViewModelComponent* ViewModel = nullptr;
+		TObjectPtr<UViewModelComponent> ViewModel = nullptr;
 
 	UPROPERTY(EditAnywhere)
-		UWeaponManager* WeaponManager = nullptr;
+		TObjectPtr<UWeaponManager> WeaponManager = nullptr;
+
+	UPROPERTY(EditAnywhere)
+		TObjectPtr<URecoilComponent> RecoilComponent = nullptr;
+
+	UPROPERTY(EditAnywhere)
+		TObjectPtr<UFieldOfViewComponent> FOVComp = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		FName CameraSocket = NAME_None;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-private:
-	FPlayerGameplayConfig PlayerGameplayConfig = {};
-
-	UPROPERTY(EditAnywhere, Category = "Character Data")
-		TObjectPtr<UCharacterStatsDataAsset> CharacterStatsData = nullptr;
 
 	UPROPERTY() TObjectPtr<ULocalUIManager> UIManager = nullptr;
 	UPROPERTY() TObjectPtr<UHandleGrabComponent> HandleGrabComponent = nullptr;
@@ -207,62 +103,56 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Examination")
 		TObjectPtr<UExaminationComponent> ExaminationComponent = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = "Interact")
+		TObjectPtr<UInteractionComponent> InteractionComponent = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Crouch")
+		TObjectPtr<UCrouchComponent> CrouchComponent = nullptr;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Build")
 		TObjectPtr<UConstructionComponent> ConstructionComponent = nullptr;
 
-	UPROPERTY(EditAnywhere, Category = "Build Data")
-		TObjectPtr<UBuildLibraryData> BuildLibraryData = nullptr;
+	UPROPERTY(EditDefaultsOnly, Category = "State")
+		TObjectPtr<UFPSStateComponent> StateComponent = nullptr;
 
-	void UnifiedUIHandler(EButtonType ButtonType, UObject* Context);
+	UPROPERTY(EditAnywhere, Category = "Sprint")
+		TObjectPtr<USprintComponent> SprintComponent = nullptr;
 
-	//void UpdateMovementSpeed(float DeltaTime);
-	void UpdateCrouch(float DeltaTime);
-	void UpdateFOV(float DeltaTime);
+	UPROPERTY(EditAnywhere, Category = "Stamina")
+		TObjectPtr<UStaminaComponent> StaminaComponent = nullptr;
 
-	void HandleInventoryChanged(int32 SlotIndex) const;
-	void HandleSlotCleared(int32 SlotIndex);
+	UPROPERTY(EditAnywhere, Category = "Build | Data")
+	TObjectPtr<UBuildLibraryData> BuildLibraryData = nullptr;
 
-	FHitResult* PerformInteraction();
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+		TObjectPtr<UInventoryComponent> Inventory = nullptr;
 
-	void HandleDropClickedItem(int32 SlotIndex);
+	UPROPERTY(EditDefaultsOnly, Category = "Data")
+		TObjectPtr<USystemData> SystemData = nullptr;
 
-	void SetDropLocation(FInventorySlot& ItemToDrop);
+	UPROPERTY(EditDefaultsOnly, Category = "Data")
+		TObjectPtr<UUIData> UIData = nullptr;
 
-	void TryPickUpObject();
+	UPROPERTY(EditDefaultsOnly)
+		float DistanceToWall = 250.f;
 
-	bool bWalk = false;
-	bool bSprint = false;
-	bool bCrouch = false;
-	bool bAim = false;
-	bool bFalling = false;
+public:	
+	virtual void Tick(float DeltaTime) override;
 
-	bool bHoldingObject = false;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	bool bIsInventoryOpen = false;
+private:
+	FPlayerGameplayConfig PlayerGameplayConfig = {};
 
 	FVector2D MouseInputThisFrame;
 
-	UPROPERTY() TObjectPtr<USprintComponent> SprintComponent = nullptr;
-	UPROPERTY() TObjectPtr<UStaminaComponent> StaminaComponent = nullptr;
+	void UnifiedUIHandler(EButtonType ButtonType, UObject* Context);
 
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<UFPSWidget> UserHUDClass = nullptr;
+	void UpdateMouseInputThisFrame();
+	void UpdateMovementState();
 
-	UPROPERTY(EditDefaultsOnly)
-		TObjectPtr<USystemData> SystemData = nullptr;
+	//void HandleInventoryChanged(int32 SlotIndex) const;
+	void HandleSlotCleared(int32 SlotIndex);
 
-	UPROPERTY(EditDefaultsOnly)
-		TObjectPtr<UUIData> UIData = nullptr;
-
-	UPROPERTY(VisibleAnywhere)
-		UInventoryComponent* Inventory = nullptr;
-
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<UInventoryMenuWidget> InventoryWidgetClass = nullptr;
-
-	UFUNCTION(BlueprintCallable)
-		void DropItem();
-
-	UFUNCTION(BlueprintCallable)
-		void ToggleInventory();
+	void SetDropLocation(FInventorySlot& ItemToDrop);
 };

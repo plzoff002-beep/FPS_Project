@@ -5,6 +5,7 @@
 
 UENUM(BlueprintType)
 enum class EUILayerType : uint8 {
+	None,
 	Game,
 	Menu,
 	Modal
@@ -28,15 +29,43 @@ enum class EButtonType : uint8
 	Audio
 };
 
+UENUM(BlueprintType)
+enum class EUIType : uint8 {
+	None,
+	Menu,
+	Options,
+	ContextMenu,
+	Gameplay,
+	Examination,
+	Inventory
+};
+
+struct FRunTimeWidgetData {
+	TObjectPtr<UUserWidget> WidgetClass = nullptr;
+	EUIType UIType = EUIType::None;
+
+	FRunTimeWidgetData(UUserWidget* Widget, EUIType Type) : 
+		WidgetClass(Widget), UIType(Type) {}
+};
+
 USTRUCT(BlueprintType)
 struct FWidgetData {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "UI")
-		TSubclassOf<UUserWidget> WidgetClass = nullptr;
+		TSoftClassPtr<UUserWidget> WidgetClass = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
-		EUILayerType LayerType = EUILayerType::Game;
+		EUILayerType LayerType = EUILayerType::None;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+		EUIType UIType = EUIType::None;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+		bool bPreload = false;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+		bool bActivateOnLoaded = false;
 };
 
 USTRUCT(BlueprintType)

@@ -9,6 +9,7 @@
 #include "PickUpActor.generated.h"
 
 class UItemDefinition;
+
 struct FExamineData;
 
 UCLASS()

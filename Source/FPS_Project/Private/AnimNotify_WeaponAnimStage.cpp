@@ -17,7 +17,7 @@ void UAnimNotify_WeaponAnimStage::Notify(USkeletalMeshComponent* MeshComp, UAnim
 		return;
 	}
 
-	if (UViewModelComponent* ViewModel = Character->GetViewModelComponent()) {
+	if (UViewModelComponent* ViewModel = Character->FindComponentByClass<UViewModelComponent>()) {
 		ViewModel->HandleMontageFinished(StageType);
 	}
 }

@@ -1,20 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Weapon_Casing.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
-// Sets default values
 AWeapon_Casing::AWeapon_Casing()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	CasingMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasingMesh"));
-	CasingMesh->SetCollisionResponseToAllChannels(ECR_Block);
-	CasingMesh->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
-	CasingMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-	CasingMesh->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
+	CasingMesh->SetSimulatePhysics(false);
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("UProjectileMovementComponent");
 	ProjectileMovement->bShouldBounce = true;
@@ -23,29 +16,89 @@ AWeapon_Casing::AWeapon_Casing()
 	RootComponent = CasingMesh;
 }
 
-void AWeapon_Casing::Initialize() {
-	ProjectileMovement->UpdatedComponent = CasingMesh;
-	ProjectileMovement->Bounciness = BounceValue;
-	ProjectileMovement->ProjectileGravityScale = GravityValue;
-	ProjectileMovement->InitialSpeed = SpeedValue;
-	ProjectileMovement->MaxSpeed = SpeedValue * GravityValue;
-	ProjectileMovement->Velocity = GetActorForwardVector() * SpeedValue;
+void AWeapon_Casing::DisableCasing() {
+	if (ProjectileMovement) {
+		ProjectileMovement->Deactivate();
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Weapon_Casing: DisableCasing - ProjectileMovement is nullptr"));
+	}
+
+	if (CasingMesh) {
+		CasingMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		CasingMesh->SetVisibility(false);
+		CasingMesh->WakeRigidBody();
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Weapon_Casing: DisableCasing - CasingMesh is nullptr"))
+	}
+
+	SetActorTickEnabled(false);
+
+	bActive = false;
+	CurrentLifeTime = 0.f;
 }
 
-// Called when the game starts or when spawned
+void AWeapon_Casing::ActivateCasing() {
+	if (CasingMesh) {
+		CasingMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+		CasingMesh->SetCollisionResponseToAllChannels(ECR_Block);
+		CasingMesh->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+		CasingMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		CasingMesh->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
+		
+		CasingMesh->SetVisibility(true);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Weapon_Casing: ActivateCasing - CasingMesh is nullptr"));
+		return;
+	}
+
+	if (ProjectileMovement) {
+		ProjectileMovement->SetUpdatedComponent(CasingMesh);
+		ProjectileMovement->Activate();
+		ProjectileMovement->Velocity = GetActorForwardVector() * SpeedValue;
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Weapon_Casing: ActivateCasing - ProjectileMovement is nullptr"));
+	}
+
+	bActive = true;
+	SetActorTickEnabled(true);
+}
+
+void AWeapon_Casing::Initialize() {
+	if (ProjectileMovement) {
+		ProjectileMovement->Bounciness = BounceValue;
+		ProjectileMovement->ProjectileGravityScale = GravityValue;
+		ProjectileMovement->InitialSpeed = SpeedValue;
+		ProjectileMovement->MaxSpeed = SpeedValue * GravityValue;
+		
+		return;
+	} 
+
+	UE_LOG(LogTemp, Error, TEXT("Weapon_Casing: Initialize - ProjectileMovement is nullptr"));
+}
+
 void AWeapon_Casing::BeginPlay()
 {
 	Super::BeginPlay();
 
 	Initialize();
-
-	SetLifeSpan(LifeTime);
+	DisableCasing();
 }
 
-// Called every frame
 void AWeapon_Casing::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	CurrentLifeTime += DeltaTime;
+
+	if (CurrentLifeTime >= MaxLifeTime) {
+		UE_LOG(LogTemp, Warning, TEXT("Despawned"));
+
+		DisableCasing();
+	}
 }
 

@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="ULocalGlobalSettings - contents" id="sys_local_global_settings">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="ULocalGlobalSettings" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="400" height="237" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- SystemData: USystemData&lt;br&gt;- CurrentSettings: UFPSGlobalSettingsSave&lt;br&gt;+ GlobalSettingsSlot: FString&lt;br&gt;+ OnGameplaySettingsChanged: FOnGameplaySettingsChanged" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="400" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="102" width="400" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ SetSystemData(NewData): void&lt;br&gt;+ SetAndApplyGameplaySettings(Mutator): void&lt;br&gt;+ SetAndApplyAudioSettings(Mutator): void&lt;br&gt;+ SetAndApplyGraphicsSettings(Mutator): void&lt;br&gt;+ SaveAllSettings(): void&lt;br&gt;+ LoadAndApplyAllSettings(): void&lt;br&gt;+ ApplyGlobalEngineSettings(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="110" width="400" height="127" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;ULocalGlobalSettings - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: LocalPlayer subsystem that stores player settings and tells listeners about changes.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;OnGameplaySettingsChanged&lt;/code&gt;&lt;/strong&gt;: The character subscribes and copies the values (&lt;code&gt;SetPlayerGameplayConfig&lt;/code&gt;), so no gameplay class reads the settings widget.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;SaveAllSettings() / LoadAndApplyAllSettings()&lt;/code&gt;&lt;/strong&gt;: Persist settings with &lt;code&gt;UFPSGlobalSettingsSave&lt;/code&gt; (SaveGame). Known to be unstable, see README.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;SetAndApply*Settings()&lt;/code&gt;&lt;/strong&gt;: Take a mutator lambda (&lt;code&gt;TFunctionRef&lt;/code&gt;), so a widget changes only the field it owns and the subsystem applies and broadcasts it.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="40" width="620" height="237" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

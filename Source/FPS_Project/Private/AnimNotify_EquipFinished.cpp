@@ -14,7 +14,7 @@ void UAnimNotify_EquipFinished::Notify(USkeletalMeshComponent* MeshComp, UAnimSe
 	AFPSCharacter* Character = Cast<AFPSCharacter>(MeshComp->GetOwner());
 	if (!Character) return;
 
-	if (UViewModelComponent* ViewModel = Character->GetViewModelComponent()) {
+	if (UViewModelComponent* ViewModel = Character->FindComponentByClass<UViewModelComponent>()) {
 		ViewModel->HandleMontageFinished(EWeaponAnimStage::EquipFinished);
 	}
 }

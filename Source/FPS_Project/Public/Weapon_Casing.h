@@ -14,35 +14,39 @@ class FPS_PROJECT_API AWeapon_Casing : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AWeapon_Casing();
+	
+	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
-		float SpeedValue = -1.f;
+	bool IsActive() const { return bActive; }
 
-	UPROPERTY(EditAnywhere)
-		float GravityValue = -1.f;
-
-	UPROPERTY(EditAnywhere)
-		float BounceValue = -1.f;
-
-	UPROPERTY(EditAnywhere)
-		float LifeTime = -1.f;
+	void ActivateCasing();
+	void DisableCasing();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void Initialize();
+
+	UPROPERTY(EditAnywhere)
+	float SpeedValue = -1.f;
+
+	UPROPERTY(EditAnywhere)
+	float GravityValue = -1.f;
+
+	UPROPERTY(EditAnywhere)
+	float BounceValue = -1.f;
+
+	UPROPERTY(EditAnywhere)
+	float MaxLifeTime = -1.f;
+
+	float CurrentLifeTime = 0.f;
+
+	bool bActive = false;
 
 	UPROPERTY(EditAnywhere)
 		TObjectPtr<UStaticMeshComponent> CasingMesh = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
 		UProjectileMovementComponent* ProjectileMovement = nullptr;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-private:
-	void Initialize();
 };

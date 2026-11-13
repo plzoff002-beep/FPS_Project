@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="UWeaponAttachmentComponent - contents" id="sys_weapon_attachment_component">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="UWeaponAttachmentComponent" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="420" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- CurrentAttachments: TMap&amp;lt;EAttachmentType, FAttachmentSlot&amp;gt;&lt;br&gt;- AttachmentComponents: TArray&amp;lt;UStaticMeshComponent&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="420" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="68" width="420" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ Initialize(): void&lt;br&gt;+ ToggleStockState(NewState): void&lt;br&gt;+ TryToggleLaserAttachments(): void&lt;br&gt;+ GetTotalModifiers(): FWeaponStatModifiers&lt;br&gt;+ GetGripSocketTransform(): FTransform&lt;br&gt;+ GetAttachmentMesh(Type): UStaticMeshComponent&lt;br&gt;+ HasStockAttachment() / HasGripAttachment(): bool&lt;br&gt;+ SetAttachmentsHiddenInGame(bHidden): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="76" width="420" height="144" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;UWeaponAttachmentComponent - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: Owns and queries the attachments of one weapon (sight, grip, stock, laser).&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;GetTotalModifiers()&lt;/code&gt;&lt;/strong&gt;: Sums the modifiers of every attachment (damage, recoil, spread). The weapon applies them once during initialization.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;GetGripSocketTransform()&lt;/code&gt;&lt;/strong&gt;: Used for left-hand IK.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;GetAttachmentMesh()&lt;/code&gt;&lt;/strong&gt;: The ViewModel asks for the sight mesh to align the camera for aiming down sights.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="550" y="40" width="620" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

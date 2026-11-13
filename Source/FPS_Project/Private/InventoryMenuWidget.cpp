@@ -13,16 +13,18 @@ void UInventoryMenuWidget::UnifiedButtonTriggerHandler(EButtonType ButtonType, U
 	}
 }
 
-void UInventoryMenuWidget::BindToInventory(UInventoryComponent* InventoryComp) {
-	LinkedInventory = InventoryComp;
-
+void UInventoryMenuWidget::SetContextItem(UObject* NewContext) {
+	LinkedInventory = Cast<UInventoryComponent>(NewContext);
+	
 	if (LinkedInventory) {
-		LinkedInventory->OnInventoryChanged.AddUObject(
-			this,
-			&UInventoryMenuWidget::RefreshInventory
-		);
+		if (LinkedInventory) {
+			LinkedInventory->OnInventoryChanged.AddUObject(
+				this,
+				&UInventoryMenuWidget::RefreshInventory
+			);
 
-		RefreshInventory(0);
+			RefreshInventory(0);
+		}
 	}
 }
 

@@ -1,19 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "WeaponAttachmentComponent.h"
 #include "AttachmentData.h"
 #include "WeaponBase.h"
 #include "AttachmentInterface.h"
 
-// Sets default values for this component's properties
 UWeaponAttachmentComponent::UWeaponAttachmentComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 FTransform UWeaponAttachmentComponent::GetGripSocketTransform() const {
@@ -131,7 +123,7 @@ void UWeaponAttachmentComponent::AddAttachment(const FAttachmentRunTimeData& New
 
 			AWeaponBase* Owner = Cast<AWeaponBase>(GetOwner());
 
-			NewAttachmentActor->AttachToComponent(Owner->WeaponMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, NewRunTimeData.Data->TargetSocket);
+			NewAttachmentActor->AttachToComponent(Owner->GetWeaponMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, NewRunTimeData.Data->TargetSocket);
 
 			UStaticMeshComponent* VisualMesh = NewAttachmentActor->FindComponentByClass<UStaticMeshComponent>();
 
@@ -153,7 +145,7 @@ void UWeaponAttachmentComponent::AddAttachment(const FAttachmentRunTimeData& New
 
 		AWeaponBase* Owner = Cast<AWeaponBase>(GetOwner());
 
-		NewMesh->AttachToComponent(Owner->WeaponMesh, AttachmentRules, NewRunTimeData.Data->TargetSocket);
+		NewMesh->AttachToComponent(Owner->GetWeaponMesh(), AttachmentRules, NewRunTimeData.Data->TargetSocket);
 		NewMesh->RegisterComponent();
 
 		AttachmentComponents.Add(NewRunTimeData.Data->AttachmentType, NewMesh);
@@ -166,21 +158,5 @@ void UWeaponAttachmentComponent::Initialize() {
 			AddAttachment(RunTimeData);
 		}
 	}
-}
-
-// Called when the game starts
-void UWeaponAttachmentComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-}
-
-
-// Called every frame
-void UWeaponAttachmentComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
 }
 

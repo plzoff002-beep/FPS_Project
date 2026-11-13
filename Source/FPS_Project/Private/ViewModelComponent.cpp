@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ViewModelComponent.h"
 #include "FPSCharacter.h"
 #include "WeaponBase.h"
@@ -9,73 +6,151 @@
 #include "WeaponManager.h"
 #include "FPSAnimInstance.h"
 #include "AttachmentTypes.h"
+#include "ItemTypes.h"
 #include "WeaponAttachmentComponent.h" 
+#include "FPSStateComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
-// Sets default values for this component's properties
 UViewModelComponent::UViewModelComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+}
 
-	// ...
+void UViewModelComponent::ResetCharacterArms() {
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: ResetCharacterArms - Owner is nullptr"));
+		return;
+	}
+
+	if (USkeletalMeshComponent* CharacterArms = Owner.Get()->GetCharacterArms()) {
+		CharacterArms->SetRelativeLocation(FVector::ZeroVector);
+		return;
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: ResetCharacterArms - Owner is nullptr"));
+}
+
+void UViewModelComponent::ItemActionHandler(EItemActionEvent Action) {
+	switch (Action) {
+		case EItemActionEvent::Equip:
+			SetComponentTickEnabled(true);
+			break;
+
+		case EItemActionEvent::Unequip:
+			ResetCharacterArms();
+			ResetViewModelState();
+			SetComponentTickEnabled(false);
+			
+			break;
+	}
+}
+
+void UViewModelComponent::SetWeaponManager(UWeaponManager* NewWeaponManager) {
+	WeaponManager = NewWeaponManager;
+}
+
+void UViewModelComponent::SetStateComp(UFPSStateComponent* NewStateComp) {
+	StateComp = NewStateComp;
+}
+
+void UViewModelComponent::SetOwner(AFPSCharacter* NewOwner) {
+	Owner = NewOwner;
+
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Warning, TEXT("ViewModelComponent: SetOwner - Owner linking is failed"));
+	}
 }
 
 void UViewModelComponent::StopAnimImmediately() {
-	if (USkeletalMeshComponent* CharacterArms = Owner->GetCharacterArms()) {
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: StopAnimImmediately - Owner is nullptr"));
+		return;
+	}
+
+	if (USkeletalMeshComponent* CharacterArms = Owner.Get()->GetCharacterArms()) {
 		if (UFPSAnimInstance* Anim = Cast<UFPSAnimInstance>(CharacterArms->GetAnimInstance())) {
 			Anim->Montage_Stop(0.f);
 		}
 	}
 
-	if (USkeletalMeshComponent* MeshComp = WeaponManager->GetCurrentWeapon()->WeaponMesh) {
-		if (UAnimInstance* Anim = MeshComp->GetAnimInstance()) {
-			Anim->Montage_Stop(0.f);
+	if (WeaponManager.IsValid() && WeaponManager.Get()->IsHoldingWeapon()) {
+		if (const USkeletalMeshComponent* MeshComp = WeaponManager.Get()->GetWeaponMesh()) {
+			if (UAnimInstance* Anim = MeshComp->GetAnimInstance()) {
+				Anim->Montage_Stop(0.f);
+			}
 		}
 	}
 }
 
 void UViewModelComponent::UpdateADS(float DeltaTime) {
-	if (!Owner || !Owner->GetWeaponManager() || !Owner->GetWeaponManager()->GetCurrentWeapon()) return;
+	if (!Owner.IsValid() || !StateComp.IsValid() || !WeaponManager.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: UpdateADS. Owner: %s, StateComp: %s, WeaponManager: %s"),
+			*GetNameSafe(Owner.Get()),
+			*GetNameSafe(StateComp.Get()),
+			*GetNameSafe(WeaponManager.Get())
+		);
 
-	if (const UStaticMeshComponent* SightMesh = Owner->GetWeaponManager()->GetCurrentWeapon()->GetWeaponAttachmentComponent()->AttachmentComponents.FindRef(EAttachmentType::Sight)) {
+		return;
+	}
+
+	if (!WeaponManager.Get()->IsHoldingWeapon()) return;
+
+	if (const UStaticMeshComponent* SightMesh = WeaponManager.Get()->GetAttachmentMesh(EAttachmentType::Sight)) {
 		const FTransform AimSocketTransform = SightMesh->GetSocketTransform(FName("SOCKET_AimPoint"));
-		const FTransform CameraSocketTrasnform = Owner->GetCharacterArms()->GetSocketTransform(FName("CameraSocket"));
+		const FTransform CameraSocketTrasnform = Owner.Get()->GetCharacterArms()->GetSocketTransform(FName("CameraSocket"));
 
 		const FVector DesiredRelativeLoc = CameraSocketTrasnform.InverseTransformPosition(AimSocketTransform.GetLocation());
 
-		const FVector TargetPos = Owner->IsAiming() ? DesiredRelativeLoc : FVector::ZeroVector;
+		const FVector TargetPos = StateComp.Get()->IsAiming() ? DesiredRelativeLoc : FVector::ZeroVector;
 
-		const FVector NewRelativeLoc = FMath::VInterpTo(Owner->GetCameraRelativeLocation(), TargetPos, DeltaTime, ADSAccel);
+		const FVector NewRelativeLoc = FMath::VInterpTo(Owner.Get()->GetCameraRelativeLocation(), TargetPos, DeltaTime, ADSAccel);
 
-		Owner->SetCameraRelativeLocation(FVector(0.f, NewRelativeLoc.Y, NewRelativeLoc.Z));
+		Owner.Get()->SetCameraRelativeLocation(FVector(0.f, NewRelativeLoc.Y, NewRelativeLoc.Z));
 	}
 }
 
 void UViewModelComponent::HandleWeaponMontageEvent(UWeaponData* Data, EWeaponMontage MontageType) {
-	USkeletalMeshComponent* CharacterArms = Owner->GetCharacterArms();
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: HandleWeaponMontageEvent - Owner is nullptr"));
+		return;
+	}
 
-	if (CharacterArms) {
+	if (USkeletalMeshComponent* CharacterArms = Owner.Get()->GetCharacterArms()) {
 		if (UFPSAnimInstance* Anim = Cast<UFPSAnimInstance>(CharacterArms->GetAnimInstance())) {
 			if (const TObjectPtr<UAnimMontage>* MontageArms = Data->MontageAnimations_Arms.Find(MontageType)) {
 				Anim->Montage_Play(*MontageArms);
 			}
 		}
 	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("ViewModeComponent: HandleWeaponMontageEvent - CharacterArms is nullptr"));
+	}
 
-	USkeletalMeshComponent* WeaponMesh = WeaponManager->GetCurrentWeapon()->WeaponMesh;
-
-	if (WeaponMesh) {
-		if (UAnimInstance* Anim = WeaponMesh->GetAnimInstance()) {
-			if (const TObjectPtr<UAnimMontage>* MontageWeapon = Data->MontageAnimations_Weapon.Find(MontageType)) {
-				Anim->Montage_Play(*MontageWeapon);
+	if (const USkeletalMeshComponent* WeaponMesh = WeaponManager.Get()->GetWeaponMesh()) {
+		if (WeaponMesh) {
+			if (UAnimInstance* Anim = WeaponMesh->GetAnimInstance()) {
+				if (const TObjectPtr<UAnimMontage>* MontageWeapon = Data->MontageAnimations_Weapon.Find(MontageType)) {
+					Anim->Montage_Play(*MontageWeapon);
+				}
 			}
 		}
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("ViewModeComponent: HandleWeaponMontageEvent - WeaponMesh is nullptr"));
 	}
 }
 
 void UViewModelComponent::HandleWeaponCasingEvent() const {
-	WeaponManager->GetCurrentWeapon()->SpawnCasing();
+	if (WeaponManager.IsValid() && WeaponManager.Get()->IsHoldingWeapon()) {
+		WeaponManager.Get()->TrySpawnCasing();
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("ViewModeComponent: HandleWeaponCasingEvent. WeaponManager: %s, IsHoldingWeapon: %s"),
+			*GetNameSafe(WeaponManager.Get()),
+			(WeaponManager.IsValid() && WeaponManager.Get()->IsHoldingWeapon()) ? TEXT("True") : TEXT("False")
+		);
+	}
 }
 
 void UViewModelComponent::HandleMontageFinished(EWeaponAnimStage StageType) const {
@@ -83,11 +158,19 @@ void UViewModelComponent::HandleMontageFinished(EWeaponAnimStage StageType) cons
 }
 
 void UViewModelComponent::HandleWeaponAnimEvent(EWeaponAnimEvent EventType) const {
-	WeaponManager->GetCurrentWeapon()->PlayEventSound(EventType);
+	if (WeaponManager.IsValid() && WeaponManager.Get()->IsHoldingWeapon()) {
+		WeaponManager.Get()->TryPlayEventSound(EventType);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("ViewModeComponent: HandleWeaponAnimEvent. WeaponManager: %s, IsHoldingWeapon: %s"),
+			*GetNameSafe(WeaponManager.Get()),
+			(WeaponManager.IsValid() && WeaponManager.Get()->IsHoldingWeapon()) ? TEXT("True") : TEXT("False")
+		);
+	}
 }
 
 void UViewModelComponent::OnWeaponChanged(UWeaponData* Data) {
-	if (USkeletalMeshComponent* Arms = Owner->GetCharacterArms()) {
+	if (USkeletalMeshComponent* Arms = Owner.Get()->GetCharacterArms()) {
 		if (Arms->GetAnimInstance() && Data) {
 			Arms->SetHiddenInGame(false);
 
@@ -101,6 +184,12 @@ void UViewModelComponent::OnWeaponChanged(UWeaponData* Data) {
 
 			StopAnimImmediately();
 		}
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("ViewModeComponent: OnWeaponChanged. Owner: %s, Arms: %s"),
+			*GetNameSafe(Owner.Get()),
+			(Owner.IsValid() && Owner.Get()->GetCharacterArms()) ? TEXT("True") : TEXT("False")
+		);
 	}
 }
 
@@ -116,12 +205,19 @@ void UViewModelComponent::UpdateViewModelState() {
 }
 
 void UViewModelComponent::UpdateMovementTarget(FMovementSpring& Config) {
-	const float AimPenaltyX = Owner->IsAiming() ? Config.MovementX.AimPenaltyValue : 1.f;
-	const float AimPenaltyY = Owner->IsAiming() ? Config.MovementY.AimPenaltyValue : 1.f;
+	if (!Owner.IsValid() || !StateComp.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: UpdateMovementTarget. Owner: %s, StateComp: %s"), 
+			*GetNameSafe(Owner.Get()),
+			*GetNameSafe(StateComp.Get())
+		);
 
-	if (!Owner) return;
+		return;
+	}
 
-	FVector LocalVelocity = Owner->GetActorTransform().InverseTransformVectorNoScale(Owner->GetVelocity());
+	const float AimPenaltyX = StateComp.Get()->IsAiming() ? Config.MovementX.AimPenaltyValue : 1.f;
+	const float AimPenaltyY = StateComp.Get()->IsAiming() ? Config.MovementY.AimPenaltyValue : 1.f;
+
+	FVector LocalVelocity = Owner.Get()->GetActorTransform().InverseTransformVectorNoScale(Owner.Get()->GetVelocity());
 
 	if (!FMath::IsNearlyZero(LocalVelocity.X)) {
 		Config.MovementX.TargetVelocity = FMath::Clamp(
@@ -148,8 +244,13 @@ void UViewModelComponent::UpdateMovementTarget(FMovementSpring& Config) {
 }
 
 void UViewModelComponent::UpdateSwayTarget(FSwaySpring& Config) {
-	const float AimPenaltyX = Owner->IsAiming() ? Config.InputX.AimPenaltyValue : 1.f;
-	const float AimPenaltyY = Owner->IsAiming() ? Config.InputY.AimPenaltyValue : 1.f;
+	if (!StateComp.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: UpdateSwayTarget - StateComp is nullptr"));
+		return;
+	}
+
+	const float AimPenaltyX = StateComp.Get()->IsAiming() ? Config.InputX.AimPenaltyValue : 1.f;
+	const float AimPenaltyY = StateComp.Get()->IsAiming() ? Config.InputY.AimPenaltyValue : 1.f;
 
 	if (!FMath::IsNearlyZero(MouseInputThisFrame.X)) {
 		Config.InputX.TargetVelocity = FMath::Clamp(
@@ -175,22 +276,29 @@ void UViewModelComponent::UpdateSwayTarget(FSwaySpring& Config) {
 }
 
 void UViewModelComponent::UpdateJumpTarget(FJumpSpring& Config) {
-	const float AimPenalty = Owner->IsAiming() ? Config.VelocityZ.AimPenaltyValue : 1.f;
-
-	if (Owner->IsFalling()) {
-		Config.VelocityZ.TargetVelocity = FMath::Clamp(
-			(Owner->GetVelocity().Z * Config.JumpSensivity) * AimPenalty,
-			Config.VelocityZ.VelocityClampMin,
-			Config.VelocityZ.VelocityClampMax
+	if (!Owner.IsValid() || !StateComp.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: UpdateJumpTarget. Owner: %s, StateComp: %s"),
+			*GetNameSafe(Owner.Get()),
+			*GetNameSafe(StateComp.Get())
 		);
+
+		return;
 	}
-	else {
-		Config.VelocityZ.TargetVelocity = 0.f;
-	}
+
+	const float AimPenalty = StateComp.Get()->IsAiming() ? Config.VelocityZ.AimPenaltyValue : 1.f;
+
+	const float CurrentVelocity = Owner.Get()->GetVelocity().Z;
+
+	Config.VelocityZ.TargetVelocity = FMath::Clamp(
+		(CurrentVelocity * Config.JumpSensivity) * AimPenalty,
+		Config.VelocityZ.VelocityClampMin,
+		Config.VelocityZ.VelocityClampMax
+	);
 }
 
 void UViewModelComponent::UpdateSpring(float DeltaSeconds, FFloatSpring& Config) {
-	if (!Owner) {
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("ViewModelComponent: UpdateJumpTarget - Owner is nullptr"));
 		return;
 	}
 
@@ -203,28 +311,30 @@ void UViewModelComponent::UpdateSpring(float DeltaSeconds, FFloatSpring& Config)
 		DeltaSeconds,
 		Config.Mass
 	);
-
 }
 
-// Called when the game starts
 void UViewModelComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 	
-	Owner = Cast<AFPSCharacter>(GetOwner());
-
-	if (Owner) {
-		WeaponManager = Owner->GetWeaponManager();
+	SetOwner(Cast<AFPSCharacter>(GetOwner()));
+	
+	if (Owner.IsValid()) {
+		SetWeaponManager(Owner.Get()->FindComponentByClass<UWeaponManager>());
+		SetStateComp(Owner.Get()->FindComponentByClass<UFPSStateComponent>());
 	}
 }
 
-
-// Called every frame
 void UViewModelComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (Owner.IsValid()) {
+		MouseInputThisFrame = Owner.Get()->GetMouseInputThisFrame();
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("ViewModelComponent: TickComponent - Owner is nullptr"));
+	}
 
 	UpdateJumpTarget(WeaponRotationConfig);
 	UpdateSpring(DeltaTime, WeaponRotationConfig.VelocityZ);
@@ -239,10 +349,6 @@ void UViewModelComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	UpdateMovementTarget(WeaponMovementConfig);
 	UpdateSpring(DeltaTime, WeaponMovementConfig.MovementX);
 	UpdateSpring(DeltaTime, WeaponMovementConfig.MovementY);
-
-	if (Owner) {
-		MouseInputThisFrame = Owner->GetMouseInput();
-	}
 
 	UpdateViewModelState();
 

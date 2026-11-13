@@ -1,31 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "FPSPlayerController.generated.h"
 
+class AFPSCharacter;
 class UInputMappingContext;
 class UInputAction;
 class UEnhancedInputLocalPlayerSubsystem;
 
+class UExaminationComponent;
+class UInteractionComponent;
+class UHandleGrabComponent;
+class UConstructionComponent;
+class UCrouchComponent;
+class UFPSStateComponent;
+class USprintComponent;
+class UInventoryComponent;
+class UWeaponManager;
+class ULocalUIManager;
+
 struct FInputActionInstance;
 struct FInputActionValue;
 
-/**
- * 
- */
 UCLASS()
 class FPS_PROJECT_API AFPSPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-
-public:
-	void BindOnCharacterReady();
 	
 protected:
-	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
 
@@ -59,6 +62,27 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action | Examine")
 		TObjectPtr<UInputAction> IA_RotateExamine_Axis = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = "Input Action | Weapon")
+		TObjectPtr<UInputAction> IA_Shoot = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action | Weapon")
+		TObjectPtr<UInputAction> IA_Aim = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action | Weapon")
+		TObjectPtr<UInputAction> IA_Reload = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action | Weapon")
+		TObjectPtr<UInputAction> IA_MoveStock = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action | Weapon")
+		TObjectPtr<UInputAction> IA_ToggleLaserAttachments = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action | Inventory")
+		TObjectPtr<UInputAction> IA_DropItem = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action | Inventory")
+		TObjectPtr<UInputAction> IA_SelectItem = nullptr;
+
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 		TObjectPtr<UInputAction> IA_SelectSlot = nullptr;
 
@@ -71,24 +95,73 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 		TObjectPtr<UInputAction> IA_ThrowObject = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+		TObjectPtr<UInputAction> IA_Crouch = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+		TObjectPtr<UInputAction> IA_Sprint = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+		TObjectPtr<UInputAction> IA_Jump = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+		TObjectPtr<UInputAction> IA_Move = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+		TObjectPtr<UInputAction> IA_Look = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+		TObjectPtr<UInputAction> IA_ToggleInventory = nullptr;
+
 private:
+	UPROPERTY() TObjectPtr<AFPSCharacter> OwnerActor = nullptr;
+
+	UPROPERTY() TObjectPtr<UExaminationComponent> ExamComp = nullptr;
+	UPROPERTY() TObjectPtr<UInteractionComponent> InteractionComp = nullptr;
+	UPROPERTY() TObjectPtr<UHandleGrabComponent> GrabComp = nullptr;
+	UPROPERTY() TObjectPtr<UConstructionComponent> ConstructionComp = nullptr;
+	UPROPERTY() TObjectPtr<UWeaponManager> WeaponManager = nullptr;
+	UPROPERTY() TObjectPtr<ULocalUIManager> UIManager = nullptr;
+	UPROPERTY() TObjectPtr<UCrouchComponent> CrouchComp = nullptr;
+	UPROPERTY() TObjectPtr<UFPSStateComponent> StateComp = nullptr;
+	UPROPERTY() TObjectPtr<USprintComponent> SprintComp = nullptr;
+	UPROPERTY() TObjectPtr<UInventoryComponent> InventoryComp = nullptr;
+
 	UEnhancedInputLocalPlayerSubsystem* GetEISubsystem();
 
-	void OnInteractStarted();
-	void OnInteractCompleted(const FInputActionInstance& Instance);
+	void FindComponents(APawn* InPawn);
+	void BindInput();
 
-	void OnThrowStarted();
-	void OnReleaseStarted();
+	void HandleInteract(const FInputActionInstance& Instance);
 
 	void HandleSelectSlot(const FInputActionValue& Value);
 
 	void ToggleBuildMode();
-	void PlaceBuildObject();
-	void RotateBuildObject(const FInputActionValue& Value);
+	void HandlePlaceBuildObject();
+	void HandleRotateBuildObject(const FInputActionValue& Value);
 
 	void ToggleExaminationMode();
-	void TriggerExamine();
+	void HandleRotateExamine(const FInputActionValue& Value);
+	void HandleAdjustSceneCamera(const FInputActionValue& Value);
+	void HandleExamineItem();
+
+	void HandleReleaseObject();
+	void HandleThrowObject();
+
+	void HandleShoot();
+	void HandleAim();
+	void HandleReload();
+	void HandleToggleLaserAttachments();
+
+	void HandleMove(const FInputActionValue& Value);
+	void HandleLook(const FInputActionValue& Value);
+
+	void HandleSelectItem(const FInputActionValue& Value);
+	void HandleDropItem();
+
+	void HandleToggleInventory();
 
 	bool bBuildModeActive = false;
 	bool bExamed = false;
+	bool bCrouch = false;
 };

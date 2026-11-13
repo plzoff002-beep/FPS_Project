@@ -9,6 +9,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnWeaponChanged, UWeaponData*);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponMontageStarted, UWeaponData*, EWeaponMontage);
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWeaponAction, UWeaponData*, EWeaponMontage);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnShoot, const float);
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, const int32, const int32);
 

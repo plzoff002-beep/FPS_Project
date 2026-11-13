@@ -7,7 +7,7 @@
 class AExamineStudio;
 class ULocalUIManager;
 
-struct FInputActionValue;
+struct FExamineItem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPS_PROJECT_API UExaminationComponent : public UActorComponent
@@ -19,8 +19,8 @@ public:
 
 	void SetupStudio();
 
-	void RotateItem(const FInputActionValue& Value);
-	void AdjustSceneCamera(const FInputActionValue& Value);
+	void RotateItem(const FVector2D& Delta);
+	void AdjustSceneCamera(const float Direction);
 
 	void StartExamination(FExamineItem* Data);
 	void StopExamination();

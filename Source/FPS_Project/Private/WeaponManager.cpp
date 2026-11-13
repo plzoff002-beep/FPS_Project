@@ -1,77 +1,176 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "WeaponManager.h"
 #include "WeaponBase.h"
 #include "WeaponData.h"
 #include "FPSCharacter.h"
 #include "WeaponAttachmentComponent.h"
-#include "ItemFragment.h"
+#include "FPSStateComponent.h"
+#include "ItemTypes.h"
+#include "AttachmentTypes.h"
 #include "CharacterTypes.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 
-// Sets default values for this component's properties
 UWeaponManager::UWeaponManager()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 int32 UWeaponManager::GetTotalAmmo() const {
-	if (!CurrentWeapon->Data) return 0;
+	if (!CurrentWeapon) {
+		UE_LOG(LogTemp, Error, TEXT("WeaponManager: GetTotalAmmo - CurrentWeapon is nullptr"));
+		return 0;
+	}
 
-	return CurrentWeapon->GetTotalAmmo();
+	return CurrentWeapon.Get()->GetTotalAmmo();
 }
 
 int32 UWeaponManager::GetCurrentAmmo() const {
-	if (!CurrentWeapon) return 0;
+	if (!CurrentWeapon) {
+		UE_LOG(LogTemp, Error, TEXT("WeaponManager: GetCurrentAmmo - CurrentWeapon is nullptr"));
+		return 0;
+	}
 
-	return CurrentWeapon->GetCurrentAmmo();
+	return CurrentWeapon.Get()->GetCurrentAmmo();
 }
 
 AWeaponBase* UWeaponManager::GetCurrentWeapon() const {
-	if (!CurrentWeapon) return nullptr;
+	if (!CurrentWeapon) {
+		UE_LOG(LogTemp, Error, TEXT("WeaponManager: GetCurrentWeapon - CurrentWeapon is nullptr"));
+		return nullptr;
+	}
 
-	return CurrentWeapon;
+	return CurrentWeapon.Get();
+}
+
+const USkeletalMeshComponent* UWeaponManager::GetWeaponMesh() const {
+	if (!CurrentWeapon) {
+		UE_LOG(LogTemp, Error, TEXT("WeaponManager: GetWeaponMesh - CurrentWeapon is nullptr"));
+		return nullptr;
+	}
+
+	return CurrentWeapon.Get()->GetWeaponMesh();
+}
+
+const UStaticMeshComponent* UWeaponManager::GetAttachmentMesh(EAttachmentType TargetType) const {
+	if (!CurrentWeapon || !CurrentWeapon.Get()->GetAttachmentComponent()) {
+		UE_LOG(LogTemp, Warning, TEXT("WeaponManager: GetAttachmentMesh. CurrentWeapon: %s, AttachmentComponent: %s"),
+			*GetNameSafe(CurrentWeapon.Get()),
+			(CurrentWeapon && CurrentWeapon.Get()->GetAttachmentComponent()) ? TEXT("True") : TEXT("False")
+		);
+
+		return nullptr;
+	}
+
+	return CurrentWeapon.Get()->GetAttachmentMesh(TargetType);
+}
+
+void UWeaponManager::HandleWeaponLoaded(UClass* ClassToSpawn, const int32 SlotIndex, USceneComponent* AttachTo) {
+	if (!ClassToSpawn || !AttachTo) {
+		UE_LOG(LogTemp, Error, TEXT("WeaponManager: OnWeaponLoaded failed. Class: %s, AttachTo: %s"), 
+			*GetNameSafe(ClassToSpawn), 
+			*GetNameSafe(AttachTo)
+		);
+
+		return;
+	}
+
+	if (AActor* SpawnedActor = Cast<AActor>(SpawnWeapon(ClassToSpawn, AttachTo))) {
+		FLoadedItemData NewLoadedData{ SlotIndex, SpawnedActor};
+
+		OnWeaponLoaded.Broadcast(NewLoadedData);
+	}
+}
+
+void UWeaponManager::LoadWeaponAsync(TSoftClassPtr<AWeaponBase> WeaponClass, const int32 SlotIndex, USceneComponent* AttachTo) {
+	if (WeaponClass.IsNull() || !AttachTo) {
+		UE_LOG(LogTemp, Error, TEXT("WeaponManager: Async Loading failed. WeaponClass: %s, AttachTo: %s"),
+			WeaponClass.IsNull() ? TEXT("False") : TEXT("True"),
+			*GetNameSafe(AttachTo)
+		);
+
+		return;
+	}
+
+	if (WeaponClass.IsValid()) {
+		HandleWeaponLoaded(WeaponClass.Get(), SlotIndex, AttachTo);
+		return;
+	}
+
+	TWeakObjectPtr<UWeaponManager> WeakThis(this);
+
+	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
+	Streamable.RequestAsyncLoad(
+		WeaponClass.ToSoftObjectPath(),
+		FStreamableDelegate::CreateLambda([WeakThis, WeaponClass, SlotIndex, AttachTo] {
+			if (WeakThis.IsValid()) {
+				WeakThis.Get()->HandleWeaponLoaded(WeaponClass.Get(), SlotIndex, AttachTo);
+			}
+			else {
+				UE_LOG(LogTemp, Error, TEXT("WeaponManager: Manager linking is Failed"));
+			}
+		})
+	);
+}
+
+void UWeaponManager::TryToggleLaserAttachments() {
+	if (!CurrentWeapon || !CurrentWeapon.Get()->GetAttachmentComponent()) return;
+
+	CurrentWeapon.Get()->GetAttachmentComponent()->TryToggleLaserAttachments();
+}
+
+void UWeaponManager::TrySpawnCasing() {
+	if (!CurrentWeapon) {
+		UE_LOG(LogTemp, Warning, TEXT("WeaponBase: TrySpawnCasing - CurrentWeapon is nullptr"));
+		return;
+	}
+
+	CurrentWeapon.Get()->HandleSpawnCasing();
+}
+
+void UWeaponManager::TryPlayEventSound(EWeaponAnimEvent EventType) {
+	if (!CurrentWeapon) {
+		UE_LOG(LogTemp, Warning, TEXT("WeaponBase: TryPlayEventSound - CurrentWeapon is nullptr"));
+		return;
+	}
+
+	CurrentWeapon->HandlePlayEventSound(EventType);
 }
 
 void UWeaponManager::TryMoveWeaponStock() {
 	if (CurrentState != EWeaponState::Ready) return;
 
-	if (CurrentWeapon->GetAttachmentComponent()->HasStockAttachment()) {
+	if (CurrentWeapon.Get()->GetAttachmentComponent()->HasStockAttachment()) {
 		CurrentState = EWeaponState::Stocking;
 
-		if (CurrentWeapon->GetAttachmentComponent()->IsStockExtended()) {
-			CurrentWeapon->GetAttachmentComponent()->ToggleStockState(EAttachmentState::Folded);
+		if (CurrentWeapon.Get()->GetAttachmentComponent()->IsStockExtended()) {
+			CurrentWeapon.Get()->GetAttachmentComponent()->ToggleStockState(EAttachmentState::Folded);
 
-			OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::StockIn);
+			OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::StockIn);
 		}
 		else {
 			CurrentWeapon->GetAttachmentComponent()->ToggleStockState(EAttachmentState::Extended);
 
-			OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::StockOut);
+			OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::StockOut);
 		}
 	}
 }
 
 void UWeaponManager::HandleTryChargeWeapon() {
-	if (CurrentState == EWeaponState::Reloading && CurrentWeapon->GetIsNeedCharge()) {
-		CurrentWeapon->SetIsNeedCharge(false);
+	if (CurrentState == EWeaponState::Reloading && CurrentWeapon.Get()->GetIsNeedCharge()) {
+		CurrentWeapon.Get()->SetIsNeedCharge(false);
 
 		CurrentState = EWeaponState::Charging;
 
-		OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::Charge);
+		OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::Charge);
 
 		return;
 	}
-	else if (CurrentWeapon->IsChargeEveryShoot() && CurrentWeapon->HasCurrentAmmo() && CurrentWeapon->GetIsNeedCharge()) {
-		CurrentWeapon->SetIsNeedCharge(false);
+	else if (CurrentWeapon.Get()->IsChargeEveryShoot() && CurrentWeapon.Get()->HasCurrentAmmo() && CurrentWeapon.Get()->GetIsNeedCharge()) {
+		CurrentWeapon.Get()->SetIsNeedCharge(false);
 
 		CurrentState = EWeaponState::Charging;
 		
-		OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::Charge);
+		OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::Charge);
 
 		return;
 	}
@@ -96,23 +195,31 @@ void UWeaponManager::ImmediateUnEquip() {
 }
 
 void UWeaponManager::HandleChangeSpread() {
-	CurrentWeapon->HandleChangeSpread();
+	CurrentWeapon.Get()->HandleChangeSpread();
 
 	CurrentState = EWeaponState::Ready;
 }
 
 void UWeaponManager::HandleSetReloadState(UWeaponData*, EWeaponMontage) {
 	CurrentState = EWeaponState::Reloading;
+
+	if (StateComp) {
+		StateComp->TrySetWeaponState(EWeaponState::Reloading);
+	}
 }
 
 void UWeaponManager::HandleSetReadyState() {
 	CurrentState = EWeaponState::Ready;
+
+	if (StateComp) {
+		StateComp->TrySetWeaponState(EWeaponState::Ready);
+	}
 }
 
 void UWeaponManager::HandleReloadFinished() {
-	CurrentWeapon->ReloadFinished();
+	CurrentWeapon.Get()->ReloadFinished();
 
-	if (CurrentWeapon->GetIsNeedCharge()) {
+	if (CurrentWeapon.Get()->GetIsNeedCharge()) {
 		HandleTryChargeWeapon();
 
 		return;
@@ -122,18 +229,18 @@ void UWeaponManager::HandleReloadFinished() {
 }
 
 void UWeaponManager::TryInsertAmmo() {
-	if (CurrentWeapon->IsClipFull() || !CurrentWeapon->HasReserveAmmo()) {
-		OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::Reload_Finish);
+	if (CurrentWeapon.Get()->IsClipFull() || !CurrentWeapon.Get()->HasReserveAmmo()) {
+		OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::Reload_Finish);
 
 		return;
 	}
 	else {
-		OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::InsertAmmo);
+		OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::InsertAmmo);
 	}
 }
 
 void UWeaponManager::HandleAmmoInserted() {
-	CurrentWeapon->AddAmmo(1);
+	CurrentWeapon.Get()->AddAmmo(1);
 
 	TryInsertAmmo();
 }
@@ -141,19 +248,19 @@ void UWeaponManager::HandleAmmoInserted() {
 void UWeaponManager::UnbindWeaponDelegates() {
 	if (!CurrentWeapon) return;
 
-	CurrentWeapon->OnWeaponAction.RemoveAll(this);
-	CurrentWeapon->OnAmmoChanged.RemoveAll(this);
+	CurrentWeapon.Get()->OnWeaponAction.RemoveAll(this);
+	CurrentWeapon.Get()->OnAmmoChanged.RemoveAll(this);
 }
 
 void UWeaponManager::BindWeaponDelegates() {
 	if (!CurrentWeapon) return;
 
-	CurrentWeapon->OnWeaponAction.AddUObject(
+	CurrentWeapon.Get()->OnWeaponAction.AddUObject(
 		this,
 		&UWeaponManager::HandleMontageEvent
 	);
 
-	CurrentWeapon->OnAmmoChanged.AddUObject(
+	CurrentWeapon.Get()->OnAmmoChanged.AddUObject(
 		this,
 		&UWeaponManager::HandleAmmoChanged
 	);
@@ -162,18 +269,18 @@ void UWeaponManager::BindWeaponDelegates() {
 void UWeaponManager::DeactivateWeapon() {
 	if (!CurrentWeapon) return;
 
-	CurrentWeapon->SetActorHiddenInGame(true);
+	CurrentWeapon.Get()->SetActorHiddenInGame(true);
 
 	UnbindWeaponDelegates();
 }
 
 void UWeaponManager::ActivateWeapon(AWeaponBase* Weapon) {
 	CurrentWeapon = Weapon;
-	CurrentWeapon->SetActorHiddenInGame(false);
+	CurrentWeapon.Get()->SetActorHiddenInGame(false);
 
 	BindWeaponDelegates();
 
-	OnWeaponChanged.Broadcast(CurrentWeapon->Data);
+	OnWeaponChanged.Broadcast(CurrentWeapon.Get()->GetWeaponData());
 	OnAmmoChanged.Broadcast(GetCurrentAmmo(), GetTotalAmmo());
 }
 
@@ -183,7 +290,6 @@ void UWeaponManager::FinishEquip() {
 	PendingWeaponIndex = -1;
 
 	BindWeaponDelegates();
-
 	HandleSetReadyState();
 }
 
@@ -201,12 +307,13 @@ void UWeaponManager::FinishHolster() {
 	GetWorld()->GetTimerManager().SetTimerForNextTick([this, WeaponToActivate]()
 		{
 			if (UInventoryComponent* Inv = GetOwner()->FindComponentByClass<UInventoryComponent>()) {
-				if (AWeaponBase* SpawnedActor = Cast<AWeaponBase>(Inv->GetSlot(CurrentWeaponIndex)->SpawnedActor)) {
+				if (AWeaponBase* SpawnedActor = Cast<AWeaponBase>(Inv->GetSlot(WeaponToActivate)->SpawnedActor)) {
 					ActivateWeapon(SpawnedActor);
 
 					CurrentState = EWeaponState::Equipping;
 
-					OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::Equip);
+					OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::Equip);
+					OnItemAction.Broadcast(EItemActionEvent::Equip);
 				}
 			}
 		}
@@ -215,13 +322,6 @@ void UWeaponManager::FinishHolster() {
 
 void UWeaponManager::HandleAmmoChanged(const int32 CurrentAmmoValue, const int32 TotalAmmoValue) const {
 	OnAmmoChanged.Broadcast(CurrentAmmoValue, TotalAmmoValue);
-
-	/*float CurCopy = CurrentAmmoValue;
-	float TotCopy = TotalAmmoValue;
-
-	FCharacterEventPayload NewEventPayload{ ECharacterEventType::AmmoEvent, CurCopy, TotCopy };
-
-	OnCharacterEvent.Broadcast(NewEventPayload);*/
 }
 
 void UWeaponManager::HandleMontageFinished(EWeaponAnimStage StageType) {
@@ -269,16 +369,16 @@ void UWeaponManager::HandleMontageFinished(EWeaponAnimStage StageType) {
 
 void UWeaponManager::HandleMontageEvent(UWeaponData* Data, EWeaponMontage MontageType) {
 	if (MontageType == EWeaponMontage::Reload || MontageType == EWeaponMontage::Reload_Start) {
-		CurrentState = EWeaponState::Reloading;
+		HandleSetReloadState(Data, MontageType);
 	}
 
 	OnWeaponMontageStarted.Broadcast(Data, MontageType);
 }
 
-void UWeaponManager::SwapWeapon(int32 Index, AActor* Actor) {
-	if (CurrentWeaponIndex == Index || !Actor || CurrentState != EWeaponState::Ready) return;
+void UWeaponManager::SwapWeapon(int32 Index) {
+	if (CurrentWeaponIndex == Index || CurrentState != EWeaponState::Ready) return;
 
-	if (AWeaponBase* WeaponActor = Cast<AWeaponBase>(Actor)) {
+	if (AWeaponBase* WeaponActor = WeaponsArr[Index].Get()) {
 		PendingWeaponIndex = Index;
 
 		if (!CurrentWeapon) {
@@ -286,14 +386,16 @@ void UWeaponManager::SwapWeapon(int32 Index, AActor* Actor) {
 
 			ActivateWeapon(WeaponActor);
 
-			OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::Equip);
+			OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::Equip);
+			OnItemAction.Broadcast(EItemActionEvent::Equip);
 
 			return;
 		}
 
 		CurrentState = EWeaponState::Holstering;
 
-		OnWeaponMontageStarted.Broadcast(CurrentWeapon->Data, EWeaponMontage::Holster);
+		OnWeaponMontageStarted.Broadcast(CurrentWeapon.Get()->GetWeaponData(), EWeaponMontage::Holster);
+		OnItemAction.Broadcast(EItemActionEvent::Unequip);
 	}
 }
 
@@ -322,16 +424,18 @@ void UWeaponManager::SwapWeapon(int32 Index, AActor* Actor) {
 //	SwapWeapon(0);
 //}
 
-AWeaponBase* UWeaponManager::SpawnWeapon(USceneComponent* AttachTo, UItemFragment_Weapon* WeaponFragment) {
-	if (WeaponFragment) {
+AWeaponBase* UWeaponManager::SpawnWeapon(UClass* WeaponClass, USceneComponent* AttachTo) {
+	if (WeaponClass) {
 		FActorSpawnParameters Params;
 		Params.Owner = GetOwner();
 
-		AWeaponBase* SpawnedActor = GetWorld()->SpawnActor<AWeaponBase>(WeaponFragment->WeaponClass, FTransform(), Params);
+		AWeaponBase* SpawnedActor = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass, FTransform(), Params);
 
 		if (SpawnedActor) {
-			SpawnedActor->AttachToComponent(AttachTo, FAttachmentTransformRules::SnapToTargetIncludingScale, SpawnedActor->Data->Socket);
+			SpawnedActor->AttachToComponent(AttachTo, FAttachmentTransformRules::SnapToTargetIncludingScale, SpawnedActor->GetWeaponData()->Socket);
 			SpawnedActor->SetActorHiddenInGame(true);
+
+			WeaponsArr.Add(SpawnedActor);
 
 			return SpawnedActor;
 		}
@@ -341,35 +445,26 @@ AWeaponBase* UWeaponManager::SpawnWeapon(USceneComponent* AttachTo, UItemFragmen
 }
 
 void UWeaponManager::TryReload() const {
-	if (!CurrentWeapon || CurrentState != EWeaponState::Ready) {
-		return;
-	}
+	if (!CurrentWeapon || CurrentState != EWeaponState::Ready) return;
+	if (StateComp && !StateComp->CanReload()) return;
 
-	CurrentWeapon->Reload();
+	CurrentWeapon.Get()->Reload();
 }
 
 void UWeaponManager::TryShoot() const {
-	if (!CurrentWeapon || CurrentState != EWeaponState::Ready || CurrentWeapon->GetIsNeedCharge()) {
-		return;
-	}
+	if (!CurrentWeapon || CurrentState != EWeaponState::Ready || CurrentWeapon.Get()->GetIsNeedCharge()) return;
+	if (StateComp && StateComp->IsSprinting()) return;
 
-	CurrentWeapon->Shoot();
+	if (CurrentWeapon.Get()->Shoot()) {
+		OnShoot.Broadcast(CurrentWeapon->GetRecoil());
+	}
 }
 
-// Called when the game starts
 void UWeaponManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-
-}
-
-
-// Called every frame
-void UWeaponManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	if (AActor* Owner = GetOwner()) {
+		StateComp = Owner->FindComponentByClass<UFPSStateComponent>();
+	}
 }

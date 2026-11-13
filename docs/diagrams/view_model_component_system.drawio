@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="UViewModelComponent - contents" id="sys_view_model_component">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="UViewModelComponent" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="512" height="407" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- WeaponRotationConfig / WeaponHeightConfig: FJumpSpring&lt;br&gt;- WeaponSwayConfig: FSwaySpring&lt;br&gt;- WeaponMovementConfig: FMovementSpring&lt;br&gt;- State: FViewModelState&lt;br&gt;- ADSAccel: float&lt;br&gt;- Owner: TWeakObjectPtr&amp;lt;AFPSCharacter&amp;gt;&lt;br&gt;- WeaponManager: TWeakObjectPtr&amp;lt;UWeaponManager&amp;gt;&lt;br&gt;- StateComp: TWeakObjectPtr&amp;lt;UFPSStateComponent&amp;gt;&lt;br&gt;+ OnMontageFinished: FOnMontageFinished" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="512" height="161" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="187" width="512" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ OnWeaponChanged(Data): void&lt;br&gt;+ HandleWeaponMontageEvent(Data, MontageType): void&lt;br&gt;+ HandleMontageFinished(StageType): void&lt;br&gt;+ HandleWeaponAnimEvent(EventType): void&lt;br&gt;+ HandleWeaponCasingEvent(): void&lt;br&gt;+ ItemActionHandler(Action): void&lt;br&gt;+ GetState(): FViewModelState&lt;br&gt;- UpdateJumpTarget / UpdateSwayTarget / UpdateMovementTarget(Config): void&lt;br&gt;- UpdateSpring(DeltaSeconds, Config): void&lt;br&gt;- UpdateADS(DeltaTime): void&lt;br&gt;- StopAnimImmediately(): void&lt;br&gt;+ TickComponent(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="195" width="512" height="212" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;UViewModelComponent - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: Everything the first-person arms and weapon need visually: spring-based sway, jump and movement offsets, aiming alignment and montage playback.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;OnWeaponChanged()&lt;/code&gt;&lt;/strong&gt;: Links the weapon-specific animation layers (&lt;code&gt;LinkAnimClassLayers&lt;/code&gt;) to the arms, or hides the arms and stops montages when nothing is equipped.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;HandleWeaponMontageEvent()&lt;/code&gt;&lt;/strong&gt;: Plays the arm montage and the weapon montage for the requested &lt;code&gt;EWeaponMontage&lt;/code&gt; from the weapon data asset.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;HandleMontageFinished()&lt;/code&gt;&lt;/strong&gt;: Called by anim notifies. Re-broadcasts &lt;code&gt;OnMontageFinished(StageType)&lt;/code&gt;, which the WeaponManager uses to decide the next action.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;HandleWeaponCasingEvent() / HandleWeaponAnimEvent()&lt;/code&gt;&lt;/strong&gt;: Called by anim notifies; forward to the weapon manager to eject a casing or play a sound at the exact animation frame.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;UpdateSpring()&lt;/code&gt;&lt;/strong&gt;: Critically damped &lt;code&gt;FloatSpringInterp&lt;/code&gt; for every axis. Targets are clamped and reduced while aiming.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;ItemActionHandler()&lt;/code&gt;&lt;/strong&gt;: The tick is enabled only while a weapon is equipped; unequipping resets the arms and the state.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;UpdateADS()&lt;/code&gt;&lt;/strong&gt;: Moves the camera to the sight's &lt;code&gt;SOCKET_AimPoint&lt;/code&gt; relative to the camera socket when aiming.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="642" y="40" width="620" height="444" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

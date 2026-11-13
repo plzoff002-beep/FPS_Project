@@ -1,22 +1,17 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "UITypes.h"
 #include "UIDelegates.h"
+#include "UIData.h"
 #include "LocalUIManager.generated.h"
 
 class UUserWidget;
 class UInventoryMenuWidget;
 class UMenuWidget;
-class UUIData;
 class UFPSGlobalSettingsSave;
 
-/**
- * 
- */
 UCLASS()
 class FPS_PROJECT_API ULocalUIManager : public ULocalPlayerSubsystem
 {
@@ -27,93 +22,56 @@ public:
 
 	FOnGameplayActionRequest OnGameplayActionRequest;
 
-	UUserWidget* PushWidget(FWidgetData* WidgetData, UObject* Context);
+	UUserWidget* PushWidget(const FWidgetData* WidgetData, UObject* Context);
 	void PopWidget();
 
 	void SetUIData(UUIData* NewData);
 
+	bool HasWidget(EUIType TargetType) const;
+	bool FindAndPopWidget(EUIType TargetType);
+
+	void FindAndPushWidget(EUIType TargetType, UObject* Context, TFunction<void(UUserWidget* Widget)> OnReady = nullptr);
+	void ReplaceWidget(EUIType TargetType);
+
 	template<typename T>
 	T* GetWidget() const {
-		for (auto* Widget : WidgetStack) {
-			if (T* NeedWidget = Cast<T>(Widget)) return NeedWidget;
-		}
-
-		return nullptr;
-	}
-
-	template<typename T>
-	bool HasWidget() const {
-		if (WidgetStack.IsEmpty()) return false;
-
-		for (auto* Widget : WidgetStack) {
-			if (Widget->IsA<T>()) return true;
-		}
-
-		return false;
-	}
-
-	template<typename T>
-	TSubclassOf<UUserWidget> FindAndLoadWidget(UObject* Context) {
-		if (!Data) return nullptr;
-
-		if (FWidgetData* NewData = Data->FindWidget<T>()) {
-			PushWidget(NewData, Context);
-
-			return NewData->WidgetClass;
-		}
-
-		return nullptr;
-	}
-
-	template<typename T>
-	UUserWidget* FindAndPushWidget(UObject* Context) {
-		if (!Data) return nullptr;
-
-		if (FWidgetData* NewData = Data->FindWidget<T>()) {
-			return PushWidget(NewData, Context);
-		}
-
-		return nullptr;
-	}
-
-	template<typename T>
-	bool FindAndPopWidget() {
-		if (WidgetStack.IsEmpty()) return false;
-
-		for (int32 i = 0; i < WidgetStack.Num(); ++i) {
-			if (WidgetStack[i] && WidgetStack[i]->IsA<T>()) {
-				WidgetStack[i]->RemoveFromParent();
-				WidgetStack.RemoveAt(i);
-
-				ApplyInputMode();
-				RefreshLayoutVisibility();
-
-				return true;
+		for (const FRunTimeWidgetData& WidgetData : WidgetStack) {
+			if (WidgetData.WidgetClass && WidgetData.WidgetClass.Get()->IsA(T::StaticClass())) {
+				return Cast<T>(WidgetData.WidgetClass.Get());
 			}
 		}
 
-		return false;
+		return nullptr;
 	}
 
-private:
+protected:
 	UPROPERTY(EditAnywhere)
 		TObjectPtr<UUIData> Data = nullptr;
 
-	UObject* CurrentActiveContext = nullptr;
+	UPROPERTY() TObjectPtr<UFPSGlobalSettingsSave> CurrentSettings;
 
-	TArray<UUserWidget*> WidgetStack;
+	TWeakObjectPtr<UObject> CurrentActiveContext = nullptr;
+
+	TArray<FRunTimeWidgetData> WidgetStack;
+	TMap<EUIType, int32> PendingActivations;
 
 	bool bGameStarted = false;
+	uint32 NextRequestId = 0;
+
+	void LoadWidgetAsync(const FWidgetData& WidgetData, UObject* Context, bool bActivateOnLoad, TFunction<void(UUserWidget* Widget)> OnReady = nullptr);
+	void HandleWidgetLoaded(const FWidgetData& WidgetData, UObject* Context, bool bActivateOnLoad, uint32 RequestId, TFunction<void(UUserWidget* Widget)> OnReady);
+
+	void ClearPendingActivations();
 
 	void ApplyInputMode();
 	void ClearStack();
-	void ReplaceWidget(FWidgetData* WidgetData);
 
 	void UnifiedActionHandler(EButtonType ButtonType, UObject*);
+
+	void PreloadWidgets();
 
 	void RemoveModalWidgets();
 	void RefreshLayoutVisibility();
 
-	UPROPERTY()
-		UFPSGlobalSettingsSave* CurrentSettings;
+	UUserWidget* GetWidgetRaw(EUIType TargetType);
 };

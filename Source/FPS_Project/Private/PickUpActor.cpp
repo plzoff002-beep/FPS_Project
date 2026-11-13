@@ -59,13 +59,13 @@ void APickUpActor::Initialize() {
 		if (VisualActor) {
 			VisualActor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 
-			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(VisualActor->GetRootComponent());
+			//RootComponent = Primitive;
 
-			RootComponent = Primitive;
-
-			Primitive->SetSimulatePhysics(true);
-			Primitive->SetCollisionProfileName(TEXT("PhysicsActor"));
-			Primitive->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+			if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(VisualActor->GetRootComponent())) {
+				Primitive->SetSimulatePhysics(true);
+				Primitive->SetCollisionProfileName(TEXT("PhysicsActor"));
+				Primitive->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+			}
 		}
 	}
 }

@@ -8,9 +8,11 @@
 #include "CharacterTypes.h"
 #include "ViewModelTypes.h"
 #include "CharacterTypes.h"
+#include "StateTypes.h"
 #include "FPSAnimInstance.generated.h"
 
 class AFPSCharacter;
+class UFPSStateComponent;
 
 /**
  * 
@@ -24,6 +26,9 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
+
+	void SetOwner(AActor* NewOwner);
+	void SetStateComp(UFPSStateComponent* NewStateComp);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "IK")
@@ -42,13 +47,13 @@ protected:
 		float LHandIKAccel = 15.f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Character State")
-		FCharacterState CharacterState = {};
+		FStateList StateList = {};
 
 	UPROPERTY(BlueprintReadOnly, Category = "Character State")
 		FViewModelState ViewModelState = {};
 
-private:
-	AActor* Owner = nullptr;
+	TWeakObjectPtr<AActor> Owner = nullptr;
+	TWeakObjectPtr<UFPSStateComponent> StateComp = nullptr;
 
 	void UpdateLeftHandIK(float DeltaSeconds);
 

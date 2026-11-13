@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="UFPSAnimInstance - contents" id="sys_fps_anim_instance">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="UFPSAnimInstance" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="400" height="288" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- IKData: FWeaponIKData&lt;br&gt;- StateList: FStateList&lt;br&gt;- ViewModelState: FViewModelState&lt;br&gt;- CurrentLeftHandIKTransform: FTransform&lt;br&gt;- CurrentIKAlpha: float&lt;br&gt;- Owner: TWeakObjectPtr&amp;lt;AActor&amp;gt;&lt;br&gt;- StateComp: TWeakObjectPtr&amp;lt;UFPSStateComponent&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="400" height="127" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="153" width="400" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ NativeInitializeAnimation(): void&lt;br&gt;+ NativeUpdateAnimation(DeltaSeconds): void&lt;br&gt;+ NativeThreadSafeUpdateAnimation(DeltaSeconds): void&lt;br&gt;- TryGetCharacterState(): void&lt;br&gt;- TryGetViewModelState(): void&lt;br&gt;- TryGetWeaponIKData(): void&lt;br&gt;- UpdateLeftHandIK(DeltaSeconds): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="161" width="400" height="127" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;UFPSAnimInstance - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: Collects data for the animation graph. It never includes the character class; it uses interfaces.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;NativeUpdateAnimation()&lt;/code&gt;&lt;/strong&gt;: Copies the state list, the view-model springs and the IK data once per frame on the game thread.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;UpdateLeftHandIK()&lt;/code&gt;&lt;/strong&gt;: Runs in the thread-safe update. The IK alpha is multiplied by the &lt;code&gt;LeftHandIKWeight&lt;/code&gt; montage curve, so animators can switch IK off during reloads, then interpolated for a smooth transition.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Interfaces&lt;/code&gt;&lt;/strong&gt;: &lt;code&gt;IWeaponIKProvider&lt;/code&gt; gives IK data, &lt;code&gt;ICharacterStateProvider&lt;/code&gt; gives the view-model state.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="40" width="620" height="288" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

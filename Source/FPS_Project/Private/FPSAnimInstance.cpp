@@ -1,12 +1,27 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Camera/CameraComponent.h"
+#include "FPSStateComponent.h"
 #include "FPSAnimInstance.h"
 #include "CharacterStateProvider.h"
 
+void UFPSAnimInstance::SetOwner(AActor* NewOwner) {
+	Owner = NewOwner;
+
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Warning, TEXT("FPSAnimInstance: SetOwner - Owner linking is failed"));
+	}
+}
+
+void UFPSAnimInstance::SetStateComp(UFPSStateComponent* NewComp) {
+	StateComp = NewComp;
+
+	if (!StateComp.IsValid()) {
+		UE_LOG(LogTemp, Warning, TEXT("FPSAnimInstance: SetStateComp - StateComp linking is failed"));
+	}
+}
+
 void UFPSAnimInstance::UpdateLeftHandIK(float DeltaSeconds) {
-	if (!Owner) {
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("FPSAnimInstance: UpdateLeftHandIK - Owner is nullptr"))
 		return;
 	}
 
@@ -40,10 +55,13 @@ void UFPSAnimInstance::UpdateLeftHandIK(float DeltaSeconds) {
 }
 
 void UFPSAnimInstance::TryGetWeaponIKData() {
-	if (!Owner) return;
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("FPSAnimInstance: TryGetWeaponIKData - Owner is nullptr"))
+		return;
+	}
 
-	if (Owner->GetClass()->ImplementsInterface(UWeaponIKProvider::StaticClass())) {
-		IKData = IWeaponIKProvider::Execute_GetWeaponIKData(Owner);
+	if (IWeaponIKProvider* Provider = Cast<IWeaponIKProvider>(Owner.Get())) {
+		IKData = Provider->GetWeaponIKData();
 	}
 	else {
 		IKData = {};
@@ -51,10 +69,13 @@ void UFPSAnimInstance::TryGetWeaponIKData() {
 }
 
 void UFPSAnimInstance::TryGetViewModelState() {
-	if (!Owner) return;
+	if (!Owner.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("FPSAnimInstance: TryGetViewModelState - Owner is nullptr"))
+		return;
+	}
 
-	if (Owner->GetClass()->ImplementsInterface(UCharacterStateProvider::StaticClass())) {
-		ViewModelState = ICharacterStateProvider::Execute_GetViewModelState(Owner);
+	if (ICharacterStateProvider* Provider = Cast<ICharacterStateProvider>(Owner.Get())) {
+		ViewModelState = Provider->GetViewModelState();
 	}
 	else {
 		ViewModelState = {};
@@ -62,14 +83,12 @@ void UFPSAnimInstance::TryGetViewModelState() {
 }
 
 void UFPSAnimInstance::TryGetCharacterState() {
-	if (!Owner) return;
+	if (!StateComp.IsValid()) {
+		UE_LOG(LogTemp, Error, TEXT("FPSAnimInstance: TryGetCharacterState - StateComp is nullptr"))
+		return;
+	}
 
-	if (Owner->GetClass()->ImplementsInterface(UCharacterStateProvider::StaticClass())) {
-		CharacterState = ICharacterStateProvider::Execute_GetCharacterState(Owner);
-	}
-	else {
-		CharacterState = {};
-	}
+	StateList = StateComp.Get()->GetStateList();
 }
 
 void UFPSAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds) {
@@ -77,7 +96,11 @@ void UFPSAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds) {
 }
 
 void UFPSAnimInstance::NativeInitializeAnimation() {
-	Owner = Cast<AActor>(TryGetPawnOwner());
+	SetOwner(Cast<AActor>(TryGetPawnOwner()));
+
+	if (Owner.IsValid()) {
+		SetStateComp(Owner.Get()->FindComponentByClass<UFPSStateComponent>());
+	}
 }
 
 void UFPSAnimInstance::NativeUpdateAnimation(float DeltaSeconds) {

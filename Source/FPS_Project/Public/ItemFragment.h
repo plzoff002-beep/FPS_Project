@@ -24,5 +24,5 @@ class FPS_PROJECT_API UItemFragment_Weapon : public UItemFragment {
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-		TSubclassOf<AWeaponBase> WeaponClass = nullptr;
+		TSoftClassPtr<AWeaponBase> WeaponClass = nullptr;
 };

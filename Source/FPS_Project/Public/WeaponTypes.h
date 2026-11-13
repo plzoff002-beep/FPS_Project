@@ -1,7 +1,20 @@
 #pragma once
 
+struct FWeaponStats {
+	float Damage = 0.f;
+	float FireRate = 0.f;
+	float Recoil = 0.f;
+	float Spread = 0.f;
+	float AdsSpread = 0.f;
+	float SuppressPenalty = 0.f;
+	float Range = 0.f;
+
+	int32 ClipSize = 0;
+};
+
 UENUM(BlueprintType)
 enum class EWeaponState : uint8 {
+	None,
 	Ready,
 	Holstering,
 	Equipping,

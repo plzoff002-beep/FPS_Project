@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="ULocalUIManager - contents" id="sys_local_ui_manager">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="ULocalUIManager" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="486" height="390" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- UIData: UUIData&lt;br&gt;- WidgetStack: TArray&amp;lt;UUserWidget&amp;gt;&lt;br&gt;- PendingActivations: TMap&amp;lt;EUIType, int32&amp;gt;&lt;br&gt;- NextRequestId: int32&lt;br&gt;+ OnGameplayActionRequest: FOnGameplayActionRequest" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="486" height="93" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="119" width="486" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ SetUIData(NewData): void&lt;br&gt;+ PushWidget(Data, Context): void&lt;br&gt;+ PopWidget(): void&lt;br&gt;+ FindAndPushWidget(Type, Context, OnReady): void&lt;br&gt;+ FindAndPopWidget(Type): void&lt;br&gt;+ ReplaceWidget(...): void&lt;br&gt;+ HasWidget(Type): bool&lt;br&gt;+ GetWidget&amp;lt;T&amp;gt;(Type): T&lt;br&gt;+ PreloadWidgets(): void&lt;br&gt;# LoadWidgetAsync(WidgetData, Context, bActivateOnLoad, OnReady): void&lt;br&gt;# HandleWidgetLoaded(...): void&lt;br&gt;- RemoveModalWidgets(): void&lt;br&gt;- RefreshLayoutVisibility(): void&lt;br&gt;- ApplyInputMode(): void&lt;br&gt;- UnifiedActionHandler(ButtonType, Context): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="127" width="486" height="263" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;ULocalUIManager - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: A LocalPlayer subsystem that owns the widget stack, layers and input mode of one player. Gameplay code asks it for widgets by &lt;code&gt;EUIType&lt;/code&gt;.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;UUIData&lt;/code&gt;&lt;/strong&gt;: A data asset that lists &lt;code&gt;FWidgetData&lt;/code&gt;: soft widget class, layer, UI type, &lt;code&gt;bPreload&lt;/code&gt;, &lt;code&gt;bActivateOnLoaded&lt;/code&gt;. Adding a widget does not require changing C++.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;LoadWidgetAsync()&lt;/code&gt;&lt;/strong&gt;: Soft widget classes are loaded asynchronously. Every request gets an id stored in &lt;code&gt;PendingActivations&lt;/code&gt;; when the load finishes the result is discarded if a newer request for the same type exists (stale-load guard).&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Context&lt;/code&gt;&lt;/strong&gt;: A &lt;code&gt;UObject*&lt;/code&gt; passed to the widget so it can read data (for example the inventory component) without a hard dependency in either direction.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;PreloadWidgets()&lt;/code&gt;&lt;/strong&gt;: Loads widgets flagged &lt;code&gt;bPreload&lt;/code&gt; at start so the first open has no hitch.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;UnifiedActionHandler()&lt;/code&gt;&lt;/strong&gt;: All buttons report through one delegate (&lt;code&gt;OnGameplayActionRequest&lt;/code&gt;); the character decides what to do (drop, delete).&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="616" y="40" width="620" height="390" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

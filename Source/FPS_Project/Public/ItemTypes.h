@@ -6,6 +6,11 @@
 class UItemDefinition;
 class AWeaponBase;
 
+enum class EItemActionEvent : uint8 {
+	Equip,
+	Unequip
+};
+
 UENUM(BlueprintType)
 enum class EItemType : uint8 {
 	None,
@@ -13,6 +18,15 @@ enum class EItemType : uint8 {
 	Ammo,
 	Weapon,
 	Attachment
+};
+
+struct FLoadedItemData {
+	int32 SlotIndex = INDEX_NONE;
+	TWeakObjectPtr<AActor> LoadedActor;
+
+	FLoadedItemData() = default;
+	FLoadedItemData(int32 NewIndex, AActor* NewActor) : 
+		SlotIndex(NewIndex), LoadedActor(NewActor) {}
 };
 
 USTRUCT(BlueprintType)
@@ -33,7 +47,7 @@ struct FInventorySlot {
 	UPROPERTY()
 		int32 Quantity = 0;
 
-		FORCEINLINE bool IsEmpty() const { return Quantity <= 0 || !ItemDef; }
+	FORCEINLINE bool IsEmpty() const { return Quantity <= 0 || !ItemDef; }
 };
 
 USTRUCT(BlueprintType)

@@ -1,11 +1,14 @@
 #include "SprintComponent.h"
 #include "StaminaComponent.h"
-#include "WeaponManager.h"
+#include "FPSStateComponent.h"
 #include "CharacterStatsDataAsset.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 USprintComponent::USprintComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 
 }
 
@@ -17,8 +20,9 @@ void USprintComponent::InitFromDataAsset(TObjectPtr<UCharacterStatsDataAsset> Da
 	SpeedAccel = DataAsset->GetStat(ECharacterStatType::SpeedAccel);
 }
 
-void USprintComponent::SetWantToSprint(bool bValue) {
-	bWantToSprint = bValue;
+void USprintComponent::ToggleSprint() {
+	bWantToSprint = !bWantToSprint;
+	SetComponentTickEnabled(true);
 }
 
 void USprintComponent::SetStaminaComponent(TObjectPtr<UStaminaComponent> Comp) {
@@ -31,17 +35,27 @@ void USprintComponent::BeginPlay()
 
 	if (Owner = Cast<ACharacter>(GetOwner())) {
 		StaminaComponent = Owner->FindComponentByClass<UStaminaComponent>();
-		WeaponManager = Owner->FindComponentByClass<UWeaponManager>();
+		StateComp = Owner->FindComponentByClass<UFPSStateComponent>();
 	}
+}
+
+void USprintComponent::ApplyMovementState(EMovementState NewState) {
+	if (!StateComp) return;
+
+	StateComp->TrySetMovementState(NewState);
 }
 
 void USprintComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	if (!Owner || !StaminaComponent || !StateComp) {
+		SetComponentTickEnabled(false);
+		return;
+	}
+
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!Owner || !StaminaComponent) return;
-
-	const bool bCanSprint = bWantToSprint && StaminaComponent->GetStamina() > 0.f && (!WeaponManager || !WeaponManager->IsReloading());
+	const bool bCanSprint = bWantToSprint && StaminaComponent->GetStamina() > 0.f && 
+		!StateComp->IsBusy() && StateComp->IsStanding();
 
 	const float TargetSpeed = bCanSprint ? SprintSpeed : WalkSpeed;
 	float& CurrentSpeed = Owner->GetCharacterMovement()->MaxWalkSpeed;
@@ -55,6 +69,10 @@ void USprintComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	else {
 		bSprinting = false;
 		StaminaComponent->Regen(DeltaTime);
+	}
+
+	if (FMath::IsNearlyEqual(CurrentSpeed, TargetSpeed)) {
+		SetComponentTickEnabled(false);
 	}
 }
 

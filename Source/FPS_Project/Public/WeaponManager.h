@@ -1,16 +1,18 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "WeaponDelegates.h"
 #include "WeaponTypes.h"
+#include "ItemDelegates.h"
 #include "WeaponManager.generated.h"
 
 class AWeaponBase;
 class UWeaponData;
 class UItemFragment_Weapon;
+class UFPSStateComponent;
+
+enum class EAttachmentType : uint8;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPS_PROJECT_API UWeaponManager : public UActorComponent
@@ -18,15 +20,22 @@ class FPS_PROJECT_API UWeaponManager : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-
-	// Sets default values for this component's properties
 	UWeaponManager();
 
 	FORCEINLINE EWeaponState GetCurrentState() const { return CurrentState; }
 
 	FORCEINLINE bool IsReloading() const { return CurrentState == EWeaponState::Reloading; }
+	FORCEINLINE bool IsHoldingWeapon() const { return CurrentWeapon ? true : false; }
 
 	FORCEINLINE int32 GetCurrentWeaponIndex() const { return CurrentWeaponIndex; }
+
+	FOnShoot OnShoot;
+	FOnItemLoaded OnWeaponLoaded;
+	FOnWeaponChanged OnWeaponChanged;
+	FOnWeaponMontageStarted OnWeaponMontageStarted;
+	FOnAmmoChanged OnAmmoChanged;
+
+	FOnItemAction OnItemAction;
 
 	UPROPERTY(EditAnywhere)
 		TArray<TSubclassOf<AWeaponBase>> WeaponClasses;
@@ -35,59 +44,54 @@ public:
 	void TryReload() const;
 	void TryInsertAmmo();
 	void TryMoveWeaponStock();
+	void TryToggleLaserAttachments();
+	void TrySpawnCasing();
+	void TryPlayEventSound(EWeaponAnimEvent EventType);
 
-	void HandleSetReloadState(UWeaponData*, EWeaponMontage);
-	void HandleSetReadyState();
+	const USkeletalMeshComponent* GetWeaponMesh() const;
+	const UStaticMeshComponent* GetAttachmentMesh(EAttachmentType TargetType) const;
 
-	void HandleMontageFinished(EWeaponAnimStage StageType);
+	void SwapWeapon(int32 Index);
 
-	void SwapWeapon(int32 Index, AActor* Actor);
-
-	//void SpawnWeapons(USceneComponent* AttachTo);
-	AWeaponBase* SpawnWeapon(USceneComponent* AttachTo, UItemFragment_Weapon* WeaponFragment);
+	void LoadWeaponAsync(TSoftClassPtr<AWeaponBase> WeaponClass, const int32 SlotIndex, USceneComponent* AttachTo);
+	void HandleWeaponLoaded(UClass* ClassToSpawn, const int32 SlotIndex, USceneComponent* AttachTo);
 
 	void HandleMontageEvent(UWeaponData* Data, EWeaponMontage MontageType);
 		
 	void HandleAmmoChanged(const int32 CurrentAmmoValue, const int32 TotalAmmoValue) const;
-
-	void HandleAmmoInserted();
-	void HandleReloadFinished();
-	void HandleTryChargeWeapon();
-	void HandleChangeSpread();
+	void HandleMontageFinished(EWeaponAnimStage StageType);
 
 	void ImmediateUnEquip();
 
 	void FinishHolster();
 	void FinishEquip();
 
-	//void HandleAnimEvent(EWeaponAnimEvent EventType);
-
 	AWeaponBase* GetCurrentWeapon() const;
 	int32 GetCurrentAmmo() const;
 	int32 GetTotalAmmo() const;
 
-	FOnWeaponChanged OnWeaponChanged;
-	FOnWeaponMontageStarted OnWeaponMontageStarted;
-	FOnAmmoChanged OnAmmoChanged;
-
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere)
-		AWeaponBase* CurrentWeapon = nullptr;
+	UPROPERTY() TObjectPtr<UFPSStateComponent> StateComp = nullptr;
+	UPROPERTY() TObjectPtr<AWeaponBase> CurrentWeapon = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
-		TArray<AWeaponBase*> WeaponsArr;
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	EWeaponState CurrentState = EWeaponState::Ready;
 
-private:
+	TArray<TObjectPtr<AWeaponBase>> WeaponsArr;
+	
 	int32 CurrentWeaponIndex = INDEX_NONE;
 	int32 PendingWeaponIndex = INDEX_NONE;
 
-	EWeaponState CurrentState = EWeaponState::Ready;
+	AWeaponBase* SpawnWeapon(UClass* WeaponClass, USceneComponent* AttachTo);
+
+	void HandleSetReloadState(UWeaponData*, EWeaponMontage);
+	void HandleSetReadyState();
+
+	void HandleAmmoInserted();
+	void HandleReloadFinished();
+	void HandleTryChargeWeapon();
+	void HandleChangeSpread();
 
 	void ActivateWeapon(AWeaponBase* Weapon);
 	void DeactivateWeapon();

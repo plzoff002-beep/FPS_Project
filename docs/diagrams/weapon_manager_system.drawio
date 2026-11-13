@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="UWeaponManager - contents" id="sys_weapon_manager">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="UWeaponManager" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="499" height="594" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- CurrentWeapon: TObjectPtr&amp;lt;AWeaponBase&amp;gt;&lt;br&gt;- WeaponsArr: TArray&amp;lt;TWeakObjectPtr&amp;lt;AWeaponBase&amp;gt;&amp;gt;&lt;br&gt;- CurrentWeaponIndex: int32&lt;br&gt;- PendingWeaponIndex: int32&lt;br&gt;- CurrentState: EWeaponState&lt;br&gt;- StateComp: UFPSStateComponent&lt;br&gt;+ OnShoot: FOnShoot&lt;br&gt;+ OnWeaponLoaded: FOnItemLoaded&lt;br&gt;+ OnWeaponChanged: FOnWeaponChanged&lt;br&gt;+ OnWeaponMontageStarted: FOnWeaponMontageStarted&lt;br&gt;+ OnAmmoChanged: FOnAmmoChanged&lt;br&gt;+ OnItemAction: FOnItemAction" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="499" height="212" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="238" width="499" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ LoadWeaponAsync(WeaponClass: TSoftClassPtr, SlotIndex, AttachTo): void&lt;br&gt;+ HandleWeaponLoaded(ClassToSpawn, SlotIndex, AttachTo): void&lt;br&gt;+ SwapWeapon(Index): void&lt;br&gt;+ ImmediateUnEquip(): void&lt;br&gt;+ TryShoot(): void&lt;br&gt;+ TryReload(): void&lt;br&gt;+ TryInsertAmmo(): void&lt;br&gt;+ TryMoveWeaponStock(): void&lt;br&gt;+ TryToggleLaserAttachments(): void&lt;br&gt;+ TrySpawnCasing(): void&lt;br&gt;+ TryPlayEventSound(EventType): void&lt;br&gt;+ HandleMontageFinished(StageType): void&lt;br&gt;+ FinishHolster(): void&lt;br&gt;+ FinishEquip(): void&lt;br&gt;+ GetCurrentWeapon(): AWeaponBase&lt;br&gt;# SpawnWeapon(WeaponClass, AttachTo): AWeaponBase&lt;br&gt;# ActivateWeapon(Weapon): void&lt;br&gt;# DeactivateWeapon(): void&lt;br&gt;# BindWeaponDelegates(): void&lt;br&gt;# UnbindWeaponDelegates(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="246" width="499" height="348" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;UWeaponManager - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: Orchestrates weapons: loading, equipping, shooting and the animation-driven state machine (Ready, Holstering, Equipping, Reloading, Charging, Stocking).&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;LoadWeaponAsync()&lt;/code&gt;&lt;/strong&gt;: The weapon class is a soft reference. If it is already in memory it is spawned at once, otherwise &lt;code&gt;FStreamableManager::RequestAsyncLoad&lt;/code&gt; is used with a weak pointer to the manager, so a destroyed manager is never touched.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;HandleWeaponLoaded()&lt;/code&gt;&lt;/strong&gt;: Spawns the weapon, attaches it hidden to the arms and broadcasts &lt;code&gt;OnWeaponLoaded&lt;/code&gt; with the slot index. The inventory stores the actor.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;SwapWeapon()&lt;/code&gt;&lt;/strong&gt;: Starts the holster montage. The new weapon is activated only when the holster animation reports that it finished.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;HandleMontageFinished()&lt;/code&gt;&lt;/strong&gt;: The heart of the animation-driven flow: a switch over &lt;code&gt;EWeaponAnimStage&lt;/code&gt;. For example InsertAmmoFinished -&gt; add one round and try the next, ReloadFinished -&gt; fill the magazine, then charge or go Ready.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;TryShoot() / TryReload()&lt;/code&gt;&lt;/strong&gt;: Guard clauses: weapon exists, state is Ready, character is not sprinting (&lt;code&gt;StateComp&lt;/code&gt;). The weapon decides if the shot is possible; &lt;code&gt;OnShoot&lt;/code&gt; carries the recoil value.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Polymorphism&lt;/code&gt;&lt;/strong&gt;: The manager only talks to &lt;code&gt;AWeaponBase&lt;/code&gt;; M4, M1911, Mossberg, BREN2 and HoneyBadger override the behaviour.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="629" y="40" width="620" height="594" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

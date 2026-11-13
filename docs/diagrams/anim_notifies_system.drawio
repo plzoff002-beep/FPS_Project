@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="AnimNotifies - contents" id="sys_anim_notifies">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="AnimNotifies" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="406" height="152" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="UAnimNotify_WeaponAnimStage  - StageType: EWeaponAnimStage&lt;br&gt;UAnimNotify_EquipFinished  - fixed stage EquipFinished&lt;br&gt;UAnimNotify_HolsterFinished  - fixed stage HolsterFinished&lt;br&gt;UAnimNotify_WeaponEvent  - EventType: EWeaponAnimEvent&lt;br&gt;UAnimNotify_SpawnCasing  - no payload" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="406" height="93" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="119" width="406" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ Notify(MeshComp, Animation): void   (each class)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="127" width="406" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;AnimNotifies - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Idea&lt;/code&gt;&lt;/strong&gt;: Animations tell the code when something has happened. An AnimNotify placed on a montage fires at an exact frame and reports to &lt;code&gt;UViewModelComponent&lt;/code&gt; found on the character that owns the mesh.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Stage notifies&lt;/code&gt;&lt;/strong&gt;: &lt;code&gt;EWeaponAnimStage&lt;/code&gt; (ShootFinished, EquipFinished, HolsterFinished, ReloadStartFinished, ReloadFinished, ReloadEndFinished, ChargeFinished, InsertAmmoFinished, StockFinished) -&gt; &lt;code&gt;ViewModel.HandleMontageFinished()&lt;/code&gt; -&gt; &lt;code&gt;OnMontageFinished&lt;/code&gt; -&gt; &lt;code&gt;WeaponManager.HandleMontageFinished()&lt;/code&gt;, which decides the next action: charge, insert the next shell, go Ready, activate the next weapon.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Event notifies&lt;/code&gt;&lt;/strong&gt;: &lt;code&gt;EWeaponAnimEvent&lt;/code&gt; (Shot, Deploy, MagOut, MagIn, MagClatch, Reload_Start, Reload_End, ChargeBack ...) -&gt; &lt;code&gt;ViewModel.HandleWeaponAnimEvent()&lt;/code&gt; -&gt; &lt;code&gt;WeaponManager.TryPlayEventSound()&lt;/code&gt;: sounds are synchronised to the animation.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;SpawnCasing&lt;/code&gt;&lt;/strong&gt;: -&gt; &lt;code&gt;ViewModel.HandleWeaponCasingEvent()&lt;/code&gt; -&gt; &lt;code&gt;WeaponManager.TrySpawnCasing()&lt;/code&gt; -&gt; &lt;code&gt;AWeaponBase.HandleSpawnCasing()&lt;/code&gt;: a pooled casing is ejected at the exact frame.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Why&lt;/code&gt;&lt;/strong&gt;: Game logic is driven by animation timing instead of timers. If the animation changes length, the code stays correct.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="536" y="40" width="620" height="379" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

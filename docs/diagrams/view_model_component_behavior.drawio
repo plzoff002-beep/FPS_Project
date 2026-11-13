@@ -1,0 +1,61 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="UViewModelComponent - relations" id="rel_view_model_component">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="UViewModelComponent - relations with other classes" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="880" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="center" value="&lt;b&gt;UViewModelComponent&lt;/b&gt;&lt;hr&gt;Everything the first-person arms and weapon need visually: spring-based sway, jump and movement offsets, aimin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="480" y="215" width="270" height="96" as="geometry"/>
+        </mxCell>
+        <mxCell id="i0" value="&lt;b&gt;UWeaponManager&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="115" width="270" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_i0" value="OnWeaponChanged / montage started" style="endArrow=classic;html=1;rounded=0;strokeColor=#555555;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="i0" target="center">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="i1" value="&lt;b&gt;UAnimNotify_* (5 classes)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="225" width="270" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_i1" value="stage + event notifications" style="endArrow=classic;html=1;rounded=0;strokeColor=#555555;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="i1" target="center">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="i2" value="&lt;b&gt;UWeaponData&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="40" y="335" width="270" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_i2" value="montage maps" style="endArrow=classic;html=1;rounded=0;strokeColor=#555555;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="i2" target="center">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="o0" value="&lt;b&gt;UWeaponManager&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="880" y="60" width="270" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_o0" value="OnMontageFinished -&gt; HandleMontageFinished" style="endArrow=classic;html=1;rounded=0;strokeColor=#555555;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="center" target="o0">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="o1" value="&lt;b&gt;UFPSAnimInstance&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="880" y="170" width="270" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_o1" value="FViewModelState via character" style="endArrow=classic;html=1;rounded=0;strokeColor=#555555;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="center" target="o1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="o2" value="&lt;b&gt;UFPSStateComponent&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="880" y="280" width="270" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_o2" value="IsAiming" style="endArrow=classic;html=1;rounded=0;strokeColor=#555555;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="center" target="o2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="o3" value="&lt;b&gt;AFPSCharacter&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="880" y="390" width="270" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_o3" value="arms + camera offset" style="endArrow=classic;html=1;rounded=0;strokeColor=#555555;fontSize=11;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="center" target="o3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend" value="&lt;b&gt;Legend:&lt;/b&gt; arrow = &quot;calls / uses / sends data to&quot;. Left column: who drives this class. Right column: what this class drives. Colors: blue = controller/character, green = component, yellow = actor, red = data asset, purple = UI / animation, gray = engine/world." style="text;html=1;align=left;verticalAlign=top;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="506" width="880" height="40" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

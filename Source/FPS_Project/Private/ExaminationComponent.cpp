@@ -4,9 +4,8 @@
 #include "Engine/StreamableManager.h"
 #include "GameFramework/PlayerController.h"
 #include "ItemTypes.h"
-#include "InputActionValue.h"
 #include "LocalUIManager.h"
-#include "ExaminationWidget.h"
+#include "UITypes.h"
 
 UExaminationComponent::UExaminationComponent()
 {
@@ -14,12 +13,10 @@ UExaminationComponent::UExaminationComponent()
 
 }
 
-void UExaminationComponent::AdjustSceneCamera(const FInputActionValue& Value) {
+void UExaminationComponent::AdjustSceneCamera(const float Direction) {
 	if (!CurrentStudio) return;
 
-	const float InputValue = Value.Get<float>();
-
-	CurrentStudio->AdjustSceneCamera(InputValue);
+	CurrentStudio->AdjustSceneCamera(Direction);
 }
 
 void UExaminationComponent::StopExamination() {
@@ -35,7 +32,7 @@ void UExaminationComponent::StopExamination() {
 	}
 
 	if (UIManager) {
-		UIManager->FindAndPopWidget<UExaminationWidget>();
+		UIManager->FindAndPopWidget(EUIType::Examination);
 	}
 }
 
@@ -56,7 +53,7 @@ void UExaminationComponent::StartExamination(FExamineItem* Data) {
 		CurrentStudio->SetupItem(Data->ExamineActorClass);
 
 		if (UIManager) {
-			UIManager->FindAndPushWidget<UExaminationWidget>(CurrentStudio);
+			UIManager->FindAndPushWidget(EUIType::Examination, CurrentStudio);
 		}
 	}
 }
@@ -100,10 +97,8 @@ void UExaminationComponent::SetupStudio() {
 	LoadStudioClassAsync();
 }
 
-void UExaminationComponent::RotateItem(const FInputActionValue& Value) {
+void UExaminationComponent::RotateItem(const FVector2D& Delta) {
 	if (CurrentStudio) {
-		const FVector2D Delta = Value.Get<FVector2D>();
-
 		CurrentStudio->RotateItem(Delta);
 	}
 }

@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -15,18 +13,25 @@ class FPS_PROJECT_API UInventoryComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UInventoryComponent();
 
+	FOnItemAdded OnItemAdded;
+
 	FOnInventoryChanged OnInventoryChanged;
+	FOnInventorySlotDropped OnInventorySlotDropped;
 	FOnInventorySlotCleared OnInventorySlotCleared;
+	FOnInventorySlotSelected OnInventorySlotSelected;
 
 	bool AddItem(UItemDefinition* Item, int32 Amount = 1);
 
-	void RegisterActorInSlot(int32 SlotIndex, AActor* SpawnedActor);
+	void RegisterActorInSlot(const FLoadedItemData& LoadedData);
 
-	FInventorySlot RemoveItem(int32 SlotIndex);
-	FInventorySlot* GetSlot(int32 SlotIndex);
+	void SelectItem(const int32 Index);
+
+	void RemoveItem(const int32 SlotIndex);
+	void DropItem(const int32 SlotIndex);
+
+	FInventorySlot* GetSlot(const int32 SlotIndex);
 
 	TArray<FInventorySlot>& GetSlots() { return Slots; }
 
@@ -44,7 +49,6 @@ public:
 	}
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, Category = "Logic")
@@ -54,7 +58,6 @@ protected:
 		TArray<FInventorySlot> Slots;
 
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:

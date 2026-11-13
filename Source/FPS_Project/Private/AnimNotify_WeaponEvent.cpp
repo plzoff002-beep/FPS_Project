@@ -8,7 +8,10 @@
 void UAnimNotify_WeaponEvent::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) {
 	if (!MeshComp) return;
 
-	if (AFPSCharacter* Character = Cast<AFPSCharacter>(MeshComp->GetOwner())) {
-		Character->GetViewModelComponent()->HandleWeaponAnimEvent(EventType);
+	AFPSCharacter* Character = Cast<AFPSCharacter>(MeshComp->GetOwner());
+	if (!Character) return;
+
+	if (UViewModelComponent* ViewModel = Character->FindComponentByClass<UViewModelComponent>()) {
+		ViewModel->HandleWeaponAnimEvent(EventType);
 	}
 }

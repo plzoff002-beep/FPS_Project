@@ -23,9 +23,6 @@ class IWeaponIKProvider {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintNativeEvent)
-		FWeaponIKData GetWeaponIKData() const;
-
-	UFUNCTION(BlueprintNativeEvent)
-		FTransform GetRightHandIKTransform() const;
+	virtual FWeaponIKData GetWeaponIKData() = 0;
+	virtual FTransform GetRightHandIKTransform() = 0;
 };

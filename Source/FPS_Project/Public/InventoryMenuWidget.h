@@ -5,22 +5,23 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "UIDelegates.h"
+#include "UIContextReceiver.h"
 #include "InventoryMenuWidget.generated.h"
 
 class UUniformGridPanel;
-class UInvewntoryComponent;
+class UInventoryComponent;
 class UInventorySlotWidget;
 
 /**
  * 
  */
 UCLASS()
-class FPS_PROJECT_API UInventoryMenuWidget : public UUserWidget
+class FPS_PROJECT_API UInventoryMenuWidget : public UUserWidget, public IUIContextReceiver
 {
 	GENERATED_BODY()
 	
 public:
-	void BindToInventory(UInventoryComponent* InventoryComp);
+	virtual void SetContextItem(UObject* NewContext) override;
 
 	FOnButtonClicked OnButtonClicked;
 

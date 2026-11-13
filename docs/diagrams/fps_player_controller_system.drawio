@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="AFPSPlayerController - contents" id="sys_fps_player_controller">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="AFPSPlayerController" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="400" height="509" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="# InputMappingContext: UInputMappingContext&lt;br&gt;# BuildMappingContext: UInputMappingContext&lt;br&gt;# ExamineMappingContext: UInputMappingContext&lt;br&gt;# IA_Move / IA_Look / IA_Jump: UInputAction&lt;br&gt;# IA_Shoot / IA_Aim / IA_Reload: UInputAction&lt;br&gt;# IA_Interact / IA_ExamineItem: UInputAction&lt;br&gt;- OwnerActor: AFPSCharacter&lt;br&gt;- WeaponManager: UWeaponManager&lt;br&gt;- StateComp: UFPSStateComponent&lt;br&gt;- InventoryComp: UInventoryComponent&lt;br&gt;- InteractionComp: UInteractionComponent&lt;br&gt;- ConstructionComp: UConstructionComponent&lt;br&gt;- UIManager: ULocalUIManager&lt;br&gt;- bBuildModeActive: bool&lt;br&gt;- bExamed: bool" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="400" height="263" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="289" width="400" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="# BeginPlay(): void&lt;br&gt;# OnPossess(InPawn): void&lt;br&gt;- FindComponents(InPawn): void&lt;br&gt;- BindInput(): void&lt;br&gt;- HandleMove(Value) / HandleLook(Value): void&lt;br&gt;- HandleInteract(Instance): void&lt;br&gt;- HandleExamineItem(): void&lt;br&gt;- HandleSelectItem(Value) / HandleDropItem(): void&lt;br&gt;- HandleToggleInventory(): void&lt;br&gt;- ToggleBuildMode(): void&lt;br&gt;- ToggleExaminationMode(): void&lt;br&gt;- GetEISubsystem(): UEnhancedInputLocalPlayerSubsystem" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="297" width="400" height="212" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;AFPSPlayerController - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: A thin input layer. It translates Enhanced Input actions into calls on components; it does not own gameplay state.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;OnPossess()&lt;/code&gt;&lt;/strong&gt;: Finds every component on the pawn with &lt;code&gt;FindComponents()&lt;/code&gt; and binds input afterwards, so actions are only bound for components that actually exist.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;BindInput()&lt;/code&gt;&lt;/strong&gt;: Binds Input Actions to component methods directly where the signature fits (&lt;code&gt;TryShoot&lt;/code&gt;, &lt;code&gt;ToggleCrouch&lt;/code&gt;, &lt;code&gt;ToggleSprint&lt;/code&gt;) and to &lt;code&gt;Handle*&lt;/code&gt; wrappers where the signature does not (return values, input values).&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;HandleInteract()&lt;/code&gt;&lt;/strong&gt;: Passes &lt;code&gt;Instance.GetElapsedTime()&lt;/code&gt; to the InteractionComponent. A tap picks up, a hold grabs.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;ToggleBuildMode() / ToggleExaminationMode()&lt;/code&gt;&lt;/strong&gt;: Add and remove mapping contexts with priorities (Input 0, Build 1, Examine 2), so the same key can mean different things in different modes.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;HandleToggleInventory()&lt;/code&gt;&lt;/strong&gt;: Pushes or pops the inventory widget through the UI manager, passing the inventory component as widget context.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="40" width="620" height="509" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -2,10 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "StateTypes.h"
 #include "SprintComponent.generated.h"
 
 class UStaminaComponent;
-class UWeaponManager;
+class UFPSStateComponent;
 class UCharacterStatsDataAsset;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -20,7 +21,7 @@ public:
 
 	FORCEINLINE bool IsSprinting() const { return bSprinting; }
 
-	void SetWantToSprint(bool bValue);
+	void ToggleSprint();
 	void SetStaminaComponent(TObjectPtr<UStaminaComponent> Comp);
 
 	void InitFromDataAsset(TObjectPtr<UCharacterStatsDataAsset> DataAsset);
@@ -42,6 +43,8 @@ private:
 	bool bSprinting = false;
 
 	UPROPERTY() TObjectPtr<UStaminaComponent> StaminaComponent = nullptr;
-	UPROPERTY() TObjectPtr<UWeaponManager> WeaponManager = nullptr;
 	UPROPERTY() TObjectPtr<ACharacter> Owner = nullptr;
+	UPROPERTY() TObjectPtr<UFPSStateComponent> StateComp = nullptr;
+
+	void ApplyMovementState(EMovementState NewState);
 };

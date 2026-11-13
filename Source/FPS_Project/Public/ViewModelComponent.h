@@ -1,10 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "WeaponTypes.h"
 #include "ViewModelTypes.h"
 #include "WeaponDelegates.h"
@@ -13,74 +10,9 @@
 class AFPSCharacter;
 class UWeaponData;
 class UWeaponManager;
+class UFPSStateComponent;
 
-USTRUCT(BlueprintType)
-struct FFloatSpring {
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	float AimPenaltyValue = 1.f;
-
-	UPROPERTY(EditAnywhere)
-	float VelocityClampMin = -10.f;
-
-	UPROPERTY(EditAnywhere)
-	float VelocityClampMax = 10.f;
-
-	UPROPERTY(BlueprintReadOnly)
-	float CurrentVelocity = 0.f;
-
-	float TargetVelocity = 0.f;
-
-	FFloatSpringState SpringState;
-
-	UPROPERTY(EditAnywhere)
-	float Stiffness = 1.f;
-
-	UPROPERTY(EditAnywhere)
-	float CriticalDampingFactor = 1.f;
-
-	UPROPERTY(EditAnywhere)
-	float Mass = 1.f;
-
-};
-
-USTRUCT(BlueprintType)
-struct FJumpSpring {
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	float JumpSensivity = 1.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FFloatSpring VelocityZ;
-};
-
-USTRUCT(BlueprintType)
-struct FSwaySpring {
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FFloatSpring InputX;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FFloatSpring InputY;
-};
-
-USTRUCT(BlueprintType)
-struct FMovementSpring {
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	float MovementSensivity = 1.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FFloatSpring MovementX;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FFloatSpring MovementY;
-
-};
+enum class EItemActionEvent : uint8;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPS_PROJECT_API UViewModelComponent : public UActorComponent
@@ -88,54 +20,55 @@ class FPS_PROJECT_API UViewModelComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UViewModelComponent();
 
-	FORCEINLINE FViewModelState GetState() const { return State; }
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		FJumpSpring WeaponRotationConfig;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		FJumpSpring WeaponHeightConfig;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		FSwaySpring WeaponSwayConfig;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		FMovementSpring WeaponMovementConfig;
-
-	UPROPERTY(BlueprintReadOnly)
-		FVector2D MouseInputThisFrame = (0, 0);
-		
 	FOnMontageFinished OnMontageFinished;
+
+	FORCEINLINE FViewModelState GetState() const { return State; }
+	void SetOwner(AFPSCharacter* NewOwner);
+	void SetWeaponManager(UWeaponManager* NewWeaponManager);
+	void SetStateComp(UFPSStateComponent* NewStateComp);
 
 	void HandleMontageFinished(EWeaponAnimStage StageType) const;
 
-	void UpdateViewModelState();
+	void OnWeaponChanged(UWeaponData* Data);
 
 	void HandleWeaponAnimEvent(EWeaponAnimEvent EventType) const;
 	void HandleWeaponMontageEvent(UWeaponData* Data, EWeaponMontage MontageType);
 	void HandleWeaponCasingEvent() const;
 
+	void ItemActionHandler(EItemActionEvent Action);
+
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FJumpSpring WeaponRotationConfig;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FJumpSpring WeaponHeightConfig;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FSwaySpring WeaponSwayConfig;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FMovementSpring WeaponMovementConfig;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D MouseInputThisFrame = (0, 0);
+
+	TWeakObjectPtr<AFPSCharacter> Owner;
+
+	TWeakObjectPtr<UFPSStateComponent> StateComp;
+	TWeakObjectPtr<UWeaponManager> WeaponManager;
+
 	UPROPERTY(EditAnywhere, Category = "Logic")
-	float ADSAccel = 5.f;
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	void OnWeaponChanged(UWeaponData* Data);
-
-private:
-	AFPSCharacter* Owner = nullptr;
-	UWeaponManager* WeaponManager = nullptr;
+		float ADSAccel = 5.f;
 
 	void UpdateADS(float DeltaTime);
+	void UpdateViewModelState();
 
 	void UpdateSpring(float DeltaTime, FFloatSpring& Config);
 	void UpdateJumpTarget(FJumpSpring& Config);
@@ -143,6 +76,8 @@ private:
 	void UpdateMovementTarget(FMovementSpring& Config);
 
 	void StopAnimImmediately();
+	void ResetCharacterArms();
+	inline void ResetViewModelState() { State = FViewModelState(); }
 
 	FViewModelState State = {};
 

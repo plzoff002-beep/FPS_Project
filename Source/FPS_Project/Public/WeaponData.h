@@ -19,6 +19,9 @@ class FPS_PROJECT_API UWeaponData : public UPrimaryDataAsset
 	
 public:
 	UPROPERTY(EditAnywhere)
+		FName WeaponName = TEXT("Weapon");
+
+	UPROPERTY(EditAnywhere)
 		float Damage = -1.f;
 
 	UPROPERTY(EditAnywhere)
@@ -35,6 +38,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		float Recoil = -1.f;
+
+	UPROPERTY(EditAnywhere)
+		int32 CasingPoolAmount = 10;
 
 	UPROPERTY(EditAnywhere)
 		bool bHasStock = false;

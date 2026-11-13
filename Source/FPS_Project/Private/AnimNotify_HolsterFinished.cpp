@@ -14,7 +14,7 @@ void UAnimNotify_HolsterFinished::Notify(USkeletalMeshComponent* MeshComp, UAnim
 	AFPSCharacter* Character = Cast<AFPSCharacter>(MeshComp->GetOwner());
 	if (!Character) return;
 
-	if (UViewModelComponent* ViewModel = Character->GetViewModelComponent()) {
+	if (UViewModelComponent* ViewModel = Character->FindComponentByClass<UViewModelComponent>()) {
 		ViewModel->HandleMontageFinished(EWeaponAnimStage::HolsterFinished);
 	}
 }

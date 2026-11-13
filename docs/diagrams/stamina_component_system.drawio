@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="UStaminaComponent - contents" id="sys_stamina_component">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="UStaminaComponent" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="400" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- MaxStamina: float&lt;br&gt;- CurrentStamina: float&lt;br&gt;- DrainRate: float&lt;br&gt;- RegenRate: float&lt;br&gt;+ OnStaminaChanged: FOnStaminaChanged" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="400" height="93" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="119" width="400" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ Drain(DeltaTime): void&lt;br&gt;+ Regen(DeltaTime): void&lt;br&gt;+ GetStamina(): float&lt;br&gt;+ GetPercentage(): float&lt;br&gt;+ InitFromDataAsset(Data): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="127" width="400" height="93" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;UStaminaComponent - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: A small, passive value holder. It has no tick; whoever spends the stamina calls it.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;OnStaminaChanged&lt;/code&gt;&lt;/strong&gt;: Broadcast only when the value actually changed, so the HUD is not updated every frame at full stamina.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;GetPercentage()&lt;/code&gt;&lt;/strong&gt;: Normalized 0..1 value for progress bars.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="40" width="620" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

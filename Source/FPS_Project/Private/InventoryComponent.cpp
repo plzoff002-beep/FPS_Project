@@ -1,23 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "InventoryComponent.h"
 #include "ItemDefinition.h"
 #include "FPSCharacter.h"
 #include "WeaponBase.h"
 #include "WeaponData.h"
 
-// Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
-FInventorySlot* UInventoryComponent::GetSlot(int32 SlotIndex) {
+FInventorySlot* UInventoryComponent::GetSlot(const int32 SlotIndex) {
 	if (!Slots.IsValidIndex(SlotIndex) || !Slots[SlotIndex].ItemDef || Slots[SlotIndex].Quantity <= 0) {
 		return nullptr;
 	}
@@ -25,9 +17,29 @@ FInventorySlot* UInventoryComponent::GetSlot(int32 SlotIndex) {
 	return &Slots[SlotIndex];
 }
 
-FInventorySlot UInventoryComponent::RemoveItem(int32 SlotIndex) {
+void UInventoryComponent::DropItem(const int32 SlotIndex) {
 	if (!Slots.IsValidIndex(SlotIndex) || !Slots[SlotIndex].ItemDef || Slots[SlotIndex].Quantity <= 0) {
-		return FInventorySlot();
+		return;
+	}
+
+	FInventorySlot SlotInfo = {};
+
+	SlotInfo.ItemDef = Slots[SlotIndex].ItemDef;
+	SlotInfo.Quantity = 1;
+
+	Slots[SlotIndex].Quantity -= 1;
+
+	if (Slots[SlotIndex].Quantity <= 0) {
+		ClearSlot(Slots[SlotIndex]);
+	}
+
+	OnInventoryChanged.Broadcast(SlotIndex);
+	OnInventorySlotDropped.Broadcast(SlotInfo);
+}
+
+void UInventoryComponent::RemoveItem(const int32 SlotIndex) {
+	if (!Slots.IsValidIndex(SlotIndex) || !Slots[SlotIndex].ItemDef || Slots[SlotIndex].Quantity <= 0) {
+		return;
 	}
 		FInventorySlot SlotInfo = {};
 
@@ -41,13 +53,7 @@ FInventorySlot UInventoryComponent::RemoveItem(int32 SlotIndex) {
 		}
 
 		OnInventoryChanged.Broadcast(SlotIndex);
-
-		return SlotInfo;
 }
-
-//TArray<FInventorySlot>& UInventoryComponent::GetSlots() const {
-//
-//}
 
 bool UInventoryComponent::AddItem(UItemDefinition* Item, int32 Amount) {
 	if (!Item || Amount <= 0) return false;
@@ -81,6 +87,7 @@ bool UInventoryComponent::AddItem(UItemDefinition* Item, int32 Amount) {
 			int32 SlotIndex = &Slot - Slots.GetData();
 
 			OnInventoryChanged.Broadcast(SlotIndex);
+			OnItemAdded.Broadcast(Item, SlotIndex);
 
 			return true;
 		}
@@ -89,10 +96,27 @@ bool UInventoryComponent::AddItem(UItemDefinition* Item, int32 Amount) {
 	return false;
 }
 
-void UInventoryComponent::RegisterActorInSlot(int32 SlotIndex, AActor* SpawnedActor) {
-	if (!Slots.IsValidIndex(SlotIndex)) return;
+void UInventoryComponent::SelectItem(const int32 Index) {
+	FInventorySlot* Slot = GetSlot(Index);
 
-	Slots[SlotIndex].SpawnedActor = SpawnedActor;
+	UE_LOG(LogTemp, Warning, TEXT("1"));
+
+	if (Slot && !Slot->IsEmpty()) {
+		UE_LOG(LogTemp, Warning, TEXT("2"));
+
+		if (AActor* SpawnedActor = Slot->SpawnedActor.Get()) {
+			UE_LOG(LogTemp, Warning, TEXT("3"));
+
+			EItemType ItemType = Slot->ItemType;
+			OnInventorySlotSelected.Broadcast(Index, SpawnedActor, ItemType);
+		}
+	}
+}
+
+void UInventoryComponent::RegisterActorInSlot(const FLoadedItemData& LoadedData) {
+	if (!Slots.IsValidIndex(LoadedData.SlotIndex)) return;
+
+	Slots[LoadedData.SlotIndex].SpawnedActor = LoadedData.LoadedActor;
 }
 
 void UInventoryComponent::ClearSlot(FInventorySlot& Slot) {
@@ -112,7 +136,6 @@ void UInventoryComponent::ClearSlot(FInventorySlot& Slot) {
 	Slot.SpawnedActor = nullptr;
 }
 
-// Called when the game starts
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -121,11 +144,9 @@ void UInventoryComponent::BeginPlay()
 }
 
 
-// Called every frame
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
 }
 

@@ -1,0 +1,28 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="UConstructionComponent - contents" id="sys_construction_component">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cls" value="UConstructionComponent" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="400" height="662" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_f" value="- MaxBuildDistance: float&lt;br&gt;- RotateRate: float&lt;br&gt;- GroundDigDepth: float&lt;br&gt;- MaxFloatingDistance: float&lt;br&gt;- bBuildModeActive: bool&lt;br&gt;- bCanPlace: bool&lt;br&gt;- bGhostMeshReady: bool&lt;br&gt;- CurrentIndexToLoad: int32&lt;br&gt;- LastSnappedLocation: FVector&lt;br&gt;- FinalSnappedLocation: FVector&lt;br&gt;- RotateTarget: FRotator&lt;br&gt;- PlayerCamera: TWeakObjectPtr&amp;lt;USceneComponent&amp;gt;&lt;br&gt;- BuildLibrary: TWeakObjectPtr&amp;lt;UBuildLibraryData&amp;gt;&lt;br&gt;- PreviousBuildData: TWeakObjectPtr&amp;lt;UBuildObjectData&amp;gt;&lt;br&gt;- GhostDMI: TWeakObjectPtr&amp;lt;UMaterialInstanceDynamic&amp;gt;&lt;br&gt;- HologramBaseMaterial: UMaterialInterface" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="26" width="400" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_l" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="cls">
+          <mxGeometry y="306" width="400" height="8" as="geometry"/>
+        </mxCell>
+        <mxCell id="cls_m" value="+ ToggleBuildMode(bEnable): void&lt;br&gt;+ SetBuildLibraryData(NewData): void&lt;br&gt;+ SelectBuildingFromLibrary(IndexToSelect): void&lt;br&gt;+ PlaceBuildObject(): void&lt;br&gt;+ RotateBuildObject(Direction): void&lt;br&gt;- LoadBuildDataAsync(IndexToLoad): void&lt;br&gt;- OnBuildDataLoaded(IndexToLoad): void&lt;br&gt;- LoadGhostMeshAsync(): void&lt;br&gt;- OnGhostMeshLoaded(LoadedData): void&lt;br&gt;- LoadBuildClassAsync(): void&lt;br&gt;- PlaceBuildObjectOnLoaded(LoadedData): void&lt;br&gt;- UpdateGhost(ViewLocation): void&lt;br&gt;- UpdateGhostMaterial(): void&lt;br&gt;- CheckPlacement(Location): bool&lt;br&gt;- HasGround(...): bool&lt;br&gt;- IsTooDeep(...): bool&lt;br&gt;- IsBlocked(Location, MeshComp): bool&lt;br&gt;- AlignPlacement(...): void&lt;br&gt;- GetPlacementLocation(): FVector&lt;br&gt;+ TickComponent(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="cls">
+          <mxGeometry y="314" width="400" height="348" as="geometry"/>
+        </mxCell>
+        <mxCell id="exp" value="&lt;h3&gt;UConstructionComponent - Explanation&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Role&lt;/code&gt;&lt;/strong&gt;: Ghost preview, grid snapping, placement validation and spawning of buildings.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;Async loading&lt;/code&gt;&lt;/strong&gt;: Build data, ghost mesh and actor class are soft references loaded on demand. &lt;code&gt;CurrentIndexToLoad&lt;/code&gt; discards stale results when the player switches buildings quickly; the ghost stays hidden until &lt;code&gt;bGhostMeshReady&lt;/code&gt;.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;UpdateGhost()&lt;/code&gt;&lt;/strong&gt;: Every tick the aim point (camera forward at &lt;code&gt;MaxBuildDistance&lt;/code&gt;) is snapped to the building's grid. The ghost is updated only when the snapped point changes (&lt;code&gt;LastSnappedLocation&lt;/code&gt;).&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;CheckPlacement()&lt;/code&gt;&lt;/strong&gt;: Ground trace (&lt;code&gt;HasGround&lt;/code&gt;), depth limit (&lt;code&gt;IsTooDeep&lt;/code&gt;), alignment to the surface, then an overlap test (&lt;code&gt;IsBlocked&lt;/code&gt;).&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;UpdateGhostMaterial()&lt;/code&gt;&lt;/strong&gt;: A dynamic material instance turns the ghost green when placement is valid and red when it is not.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;&lt;code&gt;PlaceBuildObject()&lt;/code&gt;&lt;/strong&gt;: Re-validates the spot, then spawns the real actor, loading its class first when needed.&lt;/p&gt;" style="html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacing=10;fillColor=#fffdf2;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="40" width="620" height="662" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow" value="" style="endArrow=classic;dashed=1;html=1;rounded=0;strokeColor=#999999;" edge="1" parent="1" source="cls" target="exp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
