@@ -30,15 +30,23 @@ A first-person shooter prototype built solo in **Unreal Engine 5.0** with **C++*
 - **Movement:** sprint with stamina, crouch with a stand-up check, state-driven field of view.
 - **UI:** widget stack subsystem (menus, inventory, options), data-driven and loaded asynchronously.
 
-## Demo
-
-<!-- Drag clips here in GitHub's web editor. Suggested: weapons + reload, inventory + pickup, examination, construction. -->
-
-### Weapons and animation
+### Weapons/Weapon Manager
 
 <!-- drag weapons clip here -->
 
-### Inventory and interaction
+### Weapon Attachment
+
+<!-- drag weapons clip here -->
+
+### Weapon/View Model Animations
+
+<!-- drag weapons clip here -->
+
+### Inventory
+
+<!-- drag inventory clip here -->
+
+### Interaction
 
 <!-- drag inventory clip here -->
 
@@ -142,17 +150,98 @@ Montage frame reached
 Example, shell-by-shell reload: `Reload_Start` montage &rarr; `ReloadStartFinished` &rarr; manager checks the magazine and plays `InsertAmmo` &rarr; `InsertAmmoFinished` adds one round and repeats until the magazine is full or reserve ammo ends &rarr; `Reload_Finish` &rarr; charge if needed &rarr; `Ready`.
 
 Because logic follows the animation, changing the length of a montage does not break the code.
-![Examination behavior](docs/diagrams/examination-system-behavior.png)
-![Examination system](docs/diagrams/examination-system.png)
 
 ## Systems
+
+### Weapons (UWeaponManager)
+The manager works only with AWeaponBase; concrete weapons (M4, M1911, Mossberg 590, BREN2, Honey Badger) override the behaviour that differs.
+A weapon class is a soft reference. LoadWeaponAsync() spawns it at once if it is already in memory, otherwise it requests an async load with a weak pointer to the manager, so a destroyed manager is never touched.
+After loading, the weapon is spawned hidden, attached to the arms socket from its data asset and reported through OnWeaponLoaded (slot index + actor). The inventory stores the actor in the slot.
+The manager is a state machine: Ready, Holstering, Equipping, Reloading, Charging, Stocking. The state is mirrored to UFPSStateComponent, so sprint, field of view and animation react to it.
+Swapping: holster montage → HolsterFinished → the old weapon is hidden and the new one is activated on the next tick → equip montage → EquipFinished → Ready.
+TryShoot() and TryReload() are guarded: the weapon must exist, the state must be Ready, the player must not be sprinting, and a reload also needs CanReload(). The weapon decides if the shot is possible and the manager broadcasts OnShoot with the recoil value.
+Reload types come from the weapon data: a normal magazine reload, or shell by shell (Reload_Start → InsertAmmo loop → Reload_Finish). Every next step is chosen in HandleMontageFinished(EWeaponAnimStage) when an animation notify reports the stage.
+
+![Weapon Manager behavior](docs/diagrams/weapon-manager-system-behavior.png)
+![Weapon Manager system](docs/diagrams/weapon-manager-system.png)
+
+### Weapon attachments (UWeaponAttachmentComponent)
+Every weapon owns one attachment component. Attachments are described by UAttachmentData (type, mesh or actor class, target socket, stat modifiers, state) and listed in CurrentAttachments, so a weapon is configured in the editor without code.
+Initialize() runs on BeginPlay and spawns what each entry needs: a static mesh component for visual parts (sight, grip, stock) or an actor for parts with behaviour (laser). Both are attached to a socket of the weapon mesh.
+GetTotalModifiers() combines all attachments: additive damage, multiplicative recoil, spread and ADS spread. The weapon applies the result once when it is initialized.
+The stock has two states (Extended / Folded). After the stock animation finishes, the weapon recalculates its spread from the attachment modifiers.
+The grip exposes the S_HandGrip socket, which is the target of the left-hand IK. The sight exposes SOCKET_AimPoint, which the view model uses to align the camera when aiming.
+The laser implements IAttachmentInterface, so the component toggles it without knowing the concrete class.
+Attachments are hidden and shown together with the weapon.
+
+![Weapon Attachment behavior](docs/diagrams/weapon-attachment-component-system-behavior.png)
+![Weapon Attachment system](docs/diagrams/weapon-attachment-system.png)
+
+### UI (ULocalUIManager)
+A ULocalPlayerSubsystem: one manager per player that owns the widget stack, layers and input mode.
+Widgets are described in a data asset (UUIData, a list of FWidgetData: soft widget class, layer, UI type, bPreload, bActivateOnLoaded). Adding a menu does not require changing the manager.
+FindAndPushWidget(Type, Context, OnReady) loads the widget asynchronously. Every request gets an id in PendingActivations; if the player asks for the same widget again before it is loaded, the older result is dropped (stale-load guard).
+Context is a UObject given to widgets that implement IUIContextReceiver (for example the inventory component for the inventory menu), so a widget gets its data without a hard dependency in either direction.
+Layers decide the Z-order. Pushing a modal widget removes old context menus, the game HUD stays hit-test invisible, and the HUD is hidden while the examination screen is open.
+ApplyInputMode() switches between game-only input and game-and-UI input (cursor, ignored look input) depending on whether a focusable widget is on the stack.
+All buttons report through one interface and one handler. Navigation (Play, Options, Back, Quit, Discard) is handled inside the manager. Gameplay actions (Drop, Delete, Save) are rebroadcast with the context through OnGameplayActionRequest, and the character decides what to do.
+Widgets flagged bPreload are loaded when the UI data is set, so the first open has no hitch.
+
+![Local UI Manager behavior](docs/diagrams/local-ui-manager-system-behavior.png)
+![Local UI Manager system](docs/diagrams/local-ui-manager-system.png)
+
+### View model (UViewModelComponent)
+Everything the first-person arms and weapon need visually lives here, not in the character or in the animation blueprint.
+Springs: sway from mouse input, vertical offset from jump or fall velocity, and sideways and forward offset from local movement velocity. Targets are clamped, reduced while aiming (AimPenaltyValue) and smoothed with a critically damped FloatSpringInterp (stiffness, damping, mass are editable).
+The results are collected into FViewModelState and handed to the animation blueprint through ICharacterStateProvider.
+Aiming: UpdateADS() reads the sight's SOCKET_AimPoint and the camera socket on the arms and interpolates the camera to the sight when the state component says the player is aiming.
+Montages: on a weapon event it plays the matching montage on the arms and on the weapon from the maps in UWeaponData. When the weapon changes it links the weapon's animation layers to the arms (LinkAnimClassLayers) or hides the arms and stops montages if nothing is equipped.
+Animation entry point: AnimNotifies find this component on the character and call HandleMontageFinished, HandleWeaponAnimEvent or HandleWeaponCasingEvent. The component re-broadcasts them, and UWeaponManager decides the next action.
+The tick is enabled only while a weapon is equipped.
+
+![View Model behavior](docs/diagrams/view-model-system-behavior.png)
+![View Model system](docs/diagrams/view-model-system.png)
+
+### Animation instance (UFPSAnimInstance)
+The animation blueprint reads ready-made data from this class instead of querying gameplay classes.
+Every frame on the game thread it copies the FStateList from the state component, the FViewModelState and the weapon IK data from the owner.
+The owner is accessed only through interfaces: IWeaponIKProvider gives the IK data and ICharacterStateProvider gives the view-model state, so the anim instance does not include the character class.
+Left-hand IK is updated in the thread-safe update. The target alpha is the IK alpha multiplied by the LeftHandIKWeight curve of the playing montage, so animators can switch IK off during a reload. Alpha is interpolated, and location and rotation (slerp) follow the grip target only while alpha is above zero.
+
+![Animation Instance behavior](docs/diagrams/fps-anim-instance-system-behavior.png)
+![Animation Instance system](docs/diagrams/fps-anim-instance-system.png)
+
+### Inventory (UInventoryComponent, UItemDefinition)
+The inventory is a data model. It stores slots (ItemDef, Quantity, ItemType, ActionMap, SpawnedActor) and announces changes with delegates. It does not know about widgets or weapons.
+AddItem() stacks into existing slots up to MaxStackSize, then fills an empty slot and broadcasts OnItemAdded.
+Items are data assets (UItemDefinition): icon and world class as soft references, stack size, the button map for the item's menu, and a list of Instanced fragments. FindFragment<T>() looks up behaviour by capability, for example the weapon fragment holds the soft weapon class.
+Weapon flow: OnItemAdded → the character finds the weapon fragment → UWeaponManager::LoadWeaponAsync → OnWeaponLoaded → RegisterActorInSlot stores the spawned actor in the slot.
+Selecting a slot broadcasts OnInventorySlotSelected with the stored actor and the item type; the character routes weapons to SwapWeapon.
+Dropping removes one item and broadcasts OnInventorySlotDropped; the character spawns an APickUpActor in front of the camera (deferred spawn, so the item data is set before construction) and throws it.
+ClearSlot() broadcasts OnInventorySlotCleared before destroying the spawned actor, so the character can unequip a weapon that is being removed.
+The inventory widget receives the component as its context. Drop and Delete come back through ULocalUIManager::OnGameplayActionRequest with the slot index.
+
+![Inventory behavior](docs/diagrams/inventory-system-behavior.png)
+![Inventory system](docs/diagrams/inventory-system.png)
+
+### Interaction (UInteractionComponent, UHandleGrabComponent)
+One key, two actions. EndInteraction(ElapsedTime) is called on key release: a tap shorter than 0.2 s releases anything held and tries to pick up, a longer hold grabs a physics object.
+The trace starts at GetActorEyesViewPoint(), which the character overrides to return the camera, so the ray always goes where the player looks.
+The component never knows concrete item classes. A hit actor is used through IInteractableInterface (Interact, GetPrimitiveOnInteract) or IExaminatableInterface (GetExaminationItem).
+Picking up is done by the item: APickUpActor::Interact finds the interactor's UInventoryComponent, calls AddItem and destroys itself only if the item fit.
+UHandleGrabComponent uses a Physics Handle. While an object is held, every tick moves the handle target to camera location + camera forward * MaxGrabDistance. Throwing releases the object and applies an impulse along the camera direction.
+Examination uses the same trace. TryExamineItem starts or stops UExaminationComponent and reports the result to the controller, which switches the mapping context.
+
+![Interaction behavior](docs/diagrams/interaction-system-behavior.png)
+![Interaction system](docs/diagrams/interaction-system.png)
 
 ### Examination
 - `UExaminationComponent` remembers the current view target, blends to the studio, locks look/move input, requests the item and pushes the widget. Exiting reverses everything.
 - `AExamineStudio` is spawned far from the level so it never overlaps level geometry. It owns the camera and an anchor; rotation is applied to the anchor, not to the item.
 - Item data (`FExamineItem`) defines the item class (soft reference) and the camera distances.
 
-![Construction system](docs/diagrams/construction-system.png)
+![Examination behavior](docs/diagrams/examination-system-behavior.png)
+![Examination system](docs/diagrams/examination-system.png)
 
 ### Construction
 1. Build mode adds a mapping context and enables the component's tick.
@@ -163,6 +252,7 @@ Because logic follows the animation, changing the length of a montage does not b
 6. Ghost is green when placement is valid, red when not.
 7. Placing spawns the real actor (loading its class on demand) and re-validates the spot.
 
+![Construction system](docs/diagrams/construction-system-behavior.png)
 ![Construction system](docs/diagrams/construction-system.png)
 
 ## Class diagrams
@@ -212,34 +302,6 @@ This project went through a large refactor in a short time. I list what I know i
 - Debug draw calls (`DrawDebugLine`, `DrawDebugSphere`) are still in `UInteractionComponent` and `AWeaponBase`.
 - No multiplayer: nothing is replicated.
 
-## Roadmap
-
-- [ ] Finish the refactor of the remaining classes
-- [ ] Fix recoil recovery and crouch checks
-- [ ] Make saving stable
-- [ ] Clean up the UI manager overlap
-- [ ] Playable demo build
-
-## Getting started
-
-Requirements: Unreal Engine 5.0, Visual Studio with the "Game development with C++" workload.
-
-1. Clone the repository.
-2. Right-click `FPS_Project.uproject` and choose **Generate Visual Studio project files**.
-3. Open the generated `.sln`, build `Development Editor` for `Win64`, and open the project.
-
-> The `Content/` folder is not in the repository (it is ignored), so the project opens with C++ only. Assets are listed below.
-
-### Controls
-
-| Action | Key |
-|---|---|
-| <!-- action --> | <!-- key --> |
-
-## Assets
-
-<!-- List third-party assets and their licenses. Do not publish paid marketplace assets in a public repository. -->
-
 ## Contact
 
-<!-- GitHub / email / LinkedIn -->
+<!-- GitHub / plzoff002@gmail.com -->
