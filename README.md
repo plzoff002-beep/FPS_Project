@@ -30,25 +30,21 @@ A first-person shooter prototype built solo in **Unreal Engine 5.0** with **C++*
 - **Movement:** sprint with stamina, crouch with a stand-up check, state-driven field of view.
 - **UI:** widget stack subsystem (menus, inventory, options), data-driven and loaded asynchronously.
 
-### Weapons/Weapon Manager
+### Menu
 
-<!-- drag weapons clip here -->
+https://github.com/user-attachments/assets/f3eaf3b3-a837-4df1-9ff7-c57bdd713266
+
+### Weapons and View Model Animations
+
+https://github.com/user-attachments/assets/a7f9150b-6e4c-427b-9f39-7a58f167ae65)
 
 ### Weapon Attachment
 
-<!-- drag weapons clip here -->
+https://github.com/user-attachments/assets/869a285f-b245-433b-a47f-c8a93198b864
 
-### Weapon/View Model Animations
+### Inventory and Interaction
 
-<!-- drag weapons clip here -->
-
-### Inventory
-
-<!-- drag inventory clip here -->
-
-### Interaction
-
-<!-- drag inventory clip here -->
+https://github.com/user-attachments/assets/cd348668-bba8-47ee-ad99-286fe2894b32
 
 ### Examination
 
