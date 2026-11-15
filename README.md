@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/f3eaf3b3-a837-4df1-9ff7-c57bdd713266
 
 ### Weapons and View Model Animations
 
-https://github.com/user-attachments/assets/a7f9150b-6e4c-427b-9f39-7a58f167ae65)
+https://github.com/user-attachments/assets/a7f9150b-6e4c-427b-9f39-7a58f167ae65
 
 ### Weapon Attachment
 
@@ -170,7 +170,7 @@ The grip exposes the S_HandGrip socket, which is the target of the left-hand IK.
 The laser implements IAttachmentInterface, so the component toggles it without knowing the concrete class.
 Attachments are hidden and shown together with the weapon.
 
-![Weapon Attachment behavior](docs/diagrams/weapon-attachment-component-system-behavior.png)
+![Weapon Attachment behavior](docs/diagrams/weapon-attachment-system-behavior.png)
 ![Weapon Attachment system](docs/diagrams/weapon-attachment-system.png)
 
 ### UI (ULocalUIManager)
